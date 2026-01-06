@@ -16,8 +16,8 @@ export function NavigationBar({ activeSection, onSectionChange }: NavigationBarP
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-[0_-6px_30px_rgba(15,51,82,0.12)]">
-      <div className="max-w-7xl mx-auto px-3">
-        <div className="flex items-center justify-around py-3 gap-1">
+      <div className="max-w-7xl mx-auto px-1 md:px-3">
+        <div className="flex items-center justify-around py-1.5 md:py-3 gap-0.5 md:gap-1">
           {sections.map((section) => {
             const Icon = section.icon;
             const isActive = activeSection === section.id;
@@ -26,14 +26,14 @@ export function NavigationBar({ activeSection, onSectionChange }: NavigationBarP
               <button
                 key={section.id}
                 onClick={() => onSectionChange(section.id)}
-                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all text-xs font-medium ${
+                className={`flex flex-col items-center gap-0.5 md:gap-1 px-2 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl transition-all text-[10px] md:text-xs font-medium ${
                   isActive
                     ? 'bg-[#0F3352] text-white'
                     : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
-                <Icon className={`w-6 h-6 ${isActive ? 'text-white' : 'text-slate-600'}`} />
-                <span>{section.label}</span>
+                <Icon className={`w-4 md:w-6 h-4 md:h-6 ${isActive ? 'text-white' : 'text-slate-600'}`} />
+                <span className="hidden xs:inline">{section.label}</span>
               </button>
             );
           })}

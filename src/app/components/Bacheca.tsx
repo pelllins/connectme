@@ -231,35 +231,35 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-100">
-        {/* Filter Bar */}
-        <div className="px-4 py-4 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto rounded-2xl bg-white/90 backdrop-blur border border-slate-200 shadow-sm px-5 py-4">
+        {/* Filter Bar - Compact Mobile Design */}
+        <div className="px-2 md:px-4 py-2 md:py-4 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto rounded-xl md:rounded-2xl bg-white/90 backdrop-blur border border-slate-200 shadow-sm px-2 md:px-5 py-2 md:py-4">
             {/* First Row - Per Te and Search */}
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-1.5 md:gap-3 mb-2 md:mb-3">
               <button
                 onClick={() => setIsPerTeActive(!isPerTeActive)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all border ${
+                className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm transition-all border ${
                   isPerTeActive 
                     ? 'bg-gradient-to-r from-[#8D7ED4] to-[#3CA9D3] text-white border-transparent shadow-md shadow-[#8D7ED4]/30' 
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'
                 }`}
               >
-                <Sparkles className={`w-4 h-4 ${isPerTeActive ? 'fill-purple-400' : ''}`} />
-                <span>Per Te</span>
+                <Sparkles className={`w-3 md:w-4 h-3 md:h-4 ${isPerTeActive ? 'fill-purple-400' : ''}`} />
+                <span className="hidden sm:inline">Per Te</span>
               </button>
 
               <button
                 onClick={() => setShowJoinedOnly(!showJoinedOnly)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all border ${
+                className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm transition-all border ${
                   showJoinedOnly
                     ? 'bg-emerald-100 text-emerald-800 border-emerald-200 shadow-sm'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'
                 }`}
                 title="Mostra solo i post-it a cui partecipi"
               >
-                <Users className="w-4 h-4" />
-                <span>Partecipi</span>
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                <Users className="w-3 md:w-4 h-3 md:h-4" />
+                <span className="hidden sm:inline">Partecipi</span>
+                <span className={`text-xs font-semibold px-1.5 md:px-2 py-0.5 rounded-full ${
                   showJoinedOnly ? 'bg-emerald-200 text-emerald-900' : 'bg-white text-slate-700'
                 }`}>
                   {joinedIds.length}
@@ -267,43 +267,43 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
               </button>
 
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 w-4 md:w-5 h-4 md:h-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Cerca nella bacheca..."
+                  placeholder="Cerca..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl bg-white/80 focus:outline-none focus:ring-2 focus:ring-[#8D7ED4] shadow-inner"
+                  className="w-full pl-8 md:pl-10 pr-2 md:pr-4 py-1.5 md:py-3 text-sm md:text-base border border-slate-200 rounded-lg md:rounded-xl bg-white/80 focus:outline-none focus:ring-2 focus:ring-[#8D7ED4] shadow-inner"
                 />
               </div>
             </div>
 
             {/* Second Row - Filter Buttons */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-1.5 md:gap-2 overflow-x-auto pb-1">
               {/* Category Filter */}
               {!selectedCategory ? (
                 <div className="relative">
                   <select
                     value=""
                     onChange={(e) => setSelectedCategory(e.target.value as Category)}
-                    className="appearance-none px-4 py-2.5 pr-10 bg-slate-100 rounded-lg text-slate-700 hover:bg-slate-200 cursor-pointer border border-slate-200 shadow-sm"
+                    className="appearance-none px-2 md:px-4 py-1.5 md:py-2.5 pr-8 md:pr-10 text-xs md:text-sm bg-slate-100 rounded-lg text-slate-700 hover:bg-slate-200 cursor-pointer border border-slate-200 shadow-sm"
                   >
                     <option value="">Categoria</option>
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
-                  <SlidersHorizontal className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <SlidersHorizontal className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-3 md:w-4 h-3 md:h-4 text-slate-500 pointer-events-none" />
                 </div>
               ) : (
                 <motion.div
                   initial={{ scale: 0.8 }}
                   animate={{ scale: 1 }}
-                  className="flex items-center gap-2 px-3 py-2 bg-purple-100 text-purple-800 rounded-lg border border-purple-200 shadow-sm"
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm bg-purple-100 text-purple-800 rounded-lg border border-purple-200 shadow-sm"
                 >
                   <span>{selectedCategory}</span>
                   <button onClick={() => clearFilter('category')}>
-                    <X className="w-4 h-4" />
+                    <X className="w-3 md:w-4 h-3 md:h-4" />
                   </button>
                 </motion.div>
               )}
@@ -314,24 +314,24 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
                   <select
                     value=""
                     onChange={(e) => setSelectedCampus(e.target.value as Campus)}
-                    className="appearance-none px-4 py-2.5 pr-10 bg-slate-100 rounded-lg text-slate-700 hover:bg-slate-200 cursor-pointer border border-slate-200 shadow-sm"
+                    className="appearance-none px-2 md:px-4 py-1.5 md:py-2.5 pr-8 md:pr-10 text-xs md:text-sm bg-slate-100 rounded-lg text-slate-700 hover:bg-slate-200 cursor-pointer border border-slate-200 shadow-sm"
                   >
                     <option value="">Campus</option>
                     {campuses.map((campus) => (
                       <option key={campus} value={campus}>{campus}</option>
                     ))}
                   </select>
-                  <SlidersHorizontal className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <SlidersHorizontal className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-3 md:w-4 h-3 md:h-4 text-slate-500 pointer-events-none" />
                 </div>
               ) : (
                 <motion.div
                   initial={{ scale: 0.8 }}
                   animate={{ scale: 1 }}
-                  className="flex items-center gap-2 px-3 py-2 bg-cyan-100 text-cyan-800 rounded-lg border border-cyan-200 shadow-sm"
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm bg-cyan-100 text-cyan-800 rounded-lg border border-cyan-200 shadow-sm"
                 >
                   <span>{selectedCampus}</span>
                   <button onClick={() => clearFilter('campus')}>
-                    <X className="w-4 h-4" />
+                    <X className="w-3 md:w-4 h-3 md:h-4" />
                   </button>
                 </motion.div>
               )}
@@ -342,24 +342,24 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
                   <select
                     value=""
                     onChange={(e) => setSelectedDay(e.target.value)}
-                    className="appearance-none px-4 py-2.5 pr-10 bg-slate-100 rounded-lg text-slate-700 hover:bg-slate-200 cursor-pointer border border-slate-200 shadow-sm"
+                    className="appearance-none px-2 md:px-4 py-1.5 md:py-2.5 pr-8 md:pr-10 text-xs md:text-sm bg-slate-100 rounded-lg text-slate-700 hover:bg-slate-200 cursor-pointer border border-slate-200 shadow-sm"
                   >
                     <option value="">Giorno</option>
                     {days.map((day) => (
                       <option key={day} value={day}>{day}</option>
                     ))}
                   </select>
-                  <SlidersHorizontal className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <SlidersHorizontal className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-3 md:w-4 h-3 md:h-4 text-slate-500 pointer-events-none" />
                 </div>
               ) : (
                 <motion.div
                   initial={{ scale: 0.8 }}
                   animate={{ scale: 1 }}
-                  className="flex items-center gap-2 px-3 py-2 bg-orange-100 text-orange-800 rounded-lg border border-orange-200 shadow-sm"
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm bg-orange-100 text-orange-800 rounded-lg border border-orange-200 shadow-sm"
                 >
                   <span>{selectedDay}</span>
                   <button onClick={() => clearFilter('day')}>
-                    <X className="w-4 h-4" />
+                    <X className="w-3 md:w-4 h-3 md:h-4" />
                   </button>
                 </motion.div>
               )}

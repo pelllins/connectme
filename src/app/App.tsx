@@ -710,41 +710,66 @@ function App() {
       id: Date.now().toString(),
       position: { x: 100 + Math.random() * 300, y: 100 + Math.random() * 200 },
       participants: 1,
-      createdAt: new Date().toISOString(), // Add timestamp for aging effect
+      createdAt: new Date().toISOString(),
     };
 
-    const updatedList = [...postIts, newPostIt];
-    persistPostIts(updatedList);
-
     try {
+      // Save to server first
       await savePostIt(newPostIt);
+      console.log('✅ Post-it created on server');
+      
+      // Update local state after successful server save
+      const updatedList = [...postIts, newPostIt];
+      setPostIts(updatedList);
+      
+      // Cache locally
+      try {
+        localStorage.setItem('connectme_postits', JSON.stringify(updatedList));
+      } catch (e) {
+        console.warn('Failed to cache locally:', e);
+      }
+      setIsBackendOnline(true);
     } catch (error) {
-      console.error('Failed to save new post-it to database (kept locally):', error);
+      console.error('❌ Failed to create post-it on server:', error);
       setIsBackendOnline(false);
+      alert('Errore: impossibile creare il post-it sul server. Controlla la connessione.');
+      throw error;
     }
   };
 
   const handleUpdatePostItPosition = async (id: string, x: number, y: number) => {
     console.log(`🔄 Updating position for post-it ${id} to (${x}, ${y})`);
     
-    // Update UI immediately
+    // Optimistic UI update
     const updatedPostIts = postIts.map((post) =>
       post.id === id ? { ...post, position: { x, y } } : post
     );
-    persistPostIts(updatedPostIts);
+    setPostIts(updatedPostIts);
     
-    // Try to save to database
+    // Save to server (required)
     try {
-      console.log(`💾 Saving post-it ${id} with new position via upsert`);
+      console.log(`💾 Saving post-it ${id} with new position to server`);
       const updated = updatedPostIts.find(p => p.id === id);
       if (updated) {
         await savePostIt(updated);
-        console.log(`✅ Position saved successfully for post-it ${id}`);
+        console.log(`✅ Position saved successfully on server for post-it ${id}`);
+        // Cache locally after successful server save
+        try {
+          localStorage.setItem('connectme_postits', JSON.stringify(updatedPostIts));
+        } catch (e) {
+          console.warn('Failed to cache locally:', e);
+        }
         setIsBackendOnline(true);
       }
     } catch (error) {
-      console.error('❌ Failed to update position in database (will use localStorage):', error);
+      console.error('❌ Failed to save position to server:', error);
+      // Revert optimistic update
+      const revertedPostIts = postIts.map((post) =>
+        post.id === id ? { ...post, position: post.position } : post
+      );
+      setPostIts(revertedPostIts);
       setIsBackendOnline(false);
+      alert('Errore: impossibile salvare la posizione sul server. Controlla la connessione.');
     }
   };
 
@@ -753,8 +778,6 @@ function App() {
     if (!current) return;
 
     const isJoined = joinedIds.includes(id);
-    const previousPostIts = postIts;
-    const previousJoined = joinedIds;
     const delta = isJoined ? -1 : 1;
 
     const updatedPost: PostIt = {
@@ -765,19 +788,34 @@ function App() {
     const nextList = postIts.map(p => p.id === id ? updatedPost : p);
     const nextJoined = isJoined ? joinedIds.filter(j => j !== id) : [...joinedIds, id];
 
-    persistPostIts(nextList);
-    persistJoined(nextJoined);
+    // Optimistic update
+    setPostIts(nextList);
+    setJoinedIds(nextJoined);
 
     try {
+      // Save to server
       const saved = await savePostIt(updatedPost);
-      // Ensure local state matches server result (in case of concurrent edits)
+      console.log('✅ Participation saved on server');
+      
+      // Sync with server result
       const syncedList = nextList.map(p => p.id === id ? saved : p);
-      persistPostIts(syncedList);
+      setPostIts(syncedList);
+      
+      // Cache locally after successful server save
+      try {
+        localStorage.setItem('connectme_postits', JSON.stringify(syncedList));
+        localStorage.setItem('connectme_joined', JSON.stringify(nextJoined));
+      } catch (e) {
+        console.warn('Failed to cache locally:', e);
+      }
       setIsBackendOnline(true);
     } catch (error) {
-      console.error('❌ Failed to save participation change (reverting locally):', error);
-      // Keep local optimistic state and rely on localStorage so refresh doesn't lose it
+      console.error('❌ Failed to save participation to server:', error);
+      // Revert optimistic update
+      setPostIts(postIts);
+      setJoinedIds(joinedIds);
       setIsBackendOnline(false);
+      alert('Errore: impossibile salvare la partecipazione sul server. Controlla la connessione.');
     }
   };
 
