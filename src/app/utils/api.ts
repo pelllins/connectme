@@ -5,6 +5,14 @@ const baseUrl = (supabaseUrl || '').replace(/\/$/, '');
 const API_URL = `${baseUrl}/functions/v1/make-server-3ea9e007`;
 const STORAGE_KEY = 'connectme_postits';
 
+// Debug: Log credentials on init
+if (typeof window !== 'undefined') {
+  console.log('🔐 API Initialization Debug:');
+  console.log('  VITE_SUPABASE_URL:', baseUrl ? '✅ Loaded' : '❌ Missing');
+  console.log('  VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? `✅ Loaded (${supabaseAnonKey.slice(0, 10)}...)` : '❌ Missing');
+  console.log('  API_URL:', API_URL);
+}
+
 // LocalStorage fallback functions
 function saveToLocalStorage(postIts: PostIt[]) {
   try {
@@ -30,7 +38,19 @@ function loadFromLocalStorage(): PostIt[] | null {
 
 async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   const url = `${API_URL}${endpoint}`;
-  console.log('Fetching:', url);
+  console.log('🌐 Fetching:', url);
+  
+  if (!baseUrl) {
+    const error = '❌ VITE_SUPABASE_URL is missing! Check GitHub secrets.';
+    console.error(error);
+    throw new Error(error);
+  }
+  
+  if (!supabaseAnonKey) {
+    const error = '❌ VITE_SUPABASE_ANON_KEY is missing! Check GitHub secrets.';
+    console.error(error);
+    throw new Error(error);
+  }
   
   try {
     const response = await fetch(url, {
@@ -49,13 +69,18 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
       } catch (e) {
         errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
       }
-      console.error('API Error:', errorData);
-      throw new Error(errorData.details || errorData.error || 'API request failed');
+      console.error('❌ API Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: errorData,
+        url: url,
+      });
+      throw new Error(errorData.details || errorData.error || `API request failed with status ${response.status}`);
     }
 
     return response.json();
   } catch (error) {
-    console.error('Fetch error for', url, ':', error);
+    console.error('❌ Fetch error for', url, ':', error);
     throw error;
   }
 }
