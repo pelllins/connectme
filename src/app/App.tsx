@@ -5,7 +5,7 @@ import { HomePage } from './components/HomePage';
 import { Bacheca } from './components/Bacheca';
 import { Agenda } from './components/Agenda';
 import { PostIt, UserProfile } from './types';
-import { getAllPostIts, updatePostItPosition, savePostIt, updatePostItColor, batchSavePostIts, updatePostItParticipants } from './utils/api';
+import { getAllPostIts, updatePostItPosition, savePostIt, updatePostItColor, batchSavePostIts } from './utils/api';
 
 function App() {
   const [activeSection, setActiveSection] = useState(() => {
@@ -769,7 +769,7 @@ function App() {
     persistJoined(nextJoined);
 
     try {
-      const saved = await updatePostItParticipants(id, delta);
+      const saved = await savePostIt(updatedPost);
       // Ensure local state matches server result (in case of concurrent edits)
       const syncedList = nextList.map(p => p.id === id ? saved : p);
       persistPostIts(syncedList);
