@@ -127,6 +127,22 @@ export async function updatePostItPosition(
   }
 }
 
+export async function updatePostItParticipants(
+  id: string,
+  delta: number,
+): Promise<PostIt> {
+  try {
+    const data = await fetchAPI(`/postits/${id}/participants`, {
+      method: "PUT",
+      body: JSON.stringify({ delta }),
+    });
+    return data.postIt;
+  } catch (error) {
+    console.error("Error updating post-it participants:", error);
+    throw error;
+  }
+}
+
 export async function deletePostIt(id: string): Promise<void> {
   try {
     await fetchAPI(`/postits/${id}`, {

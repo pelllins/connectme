@@ -5,7 +5,7 @@ import { HomePage } from './components/HomePage';
 import { Bacheca } from './components/Bacheca';
 import { Agenda } from './components/Agenda';
 import { PostIt, UserProfile } from './types';
-import { getAllPostIts, updatePostItPosition, savePostIt, updatePostItColor, batchSavePostIts } from './utils/api';
+import { getAllPostIts, updatePostItPosition, savePostIt, updatePostItColor, batchSavePostIts, updatePostItParticipants } from './utils/api';
 
 function App() {
   const [activeSection, setActiveSection] = useState(() => {
@@ -769,7 +769,10 @@ function App() {
     persistJoined(nextJoined);
 
     try {
-      await savePostIt(updatedPost);
+      const saved = await updatePostItParticipants(id, delta);
+      // Ensure local state matches server result (in case of concurrent edits)
+      const syncedList = nextList.map(p => p.id === id ? saved : p);
+      persistPostIts(syncedList);
       setIsBackendOnline(true);
     } catch (error) {
       console.error('❌ Failed to save participation change (reverting locally):', error);

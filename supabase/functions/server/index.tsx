@@ -118,6 +118,34 @@ app.put("/make-server-3ea9e007/postits/:id/position", async (c) => {
   }
 });
 
+// Update post-it participants (increment/decrement)
+app.put("/make-server-3ea9e007/postits/:id/participants", async (c) => {
+  try {
+    const kvStore = await getKV();
+    const id = c.req.param("id");
+    const { delta } = await c.req.json();
+
+    if (typeof delta !== "number" || Number.isNaN(delta)) {
+      return c.json({ error: "Invalid delta" }, 400);
+    }
+
+    const postIt = await kvStore.get(`postit:${id}`);
+    if (!postIt) {
+      return c.json({ error: "Post-it not found" }, 404);
+    }
+
+    const nextParticipants = Math.max(0, (postIt.participants || 0) + delta);
+    postIt.participants = nextParticipants;
+
+    await kvStore.set(`postit:${id}`, postIt);
+
+    return c.json({ success: true, postIt });
+  } catch (error) {
+    console.log(`Error updating participants for id ${c.req.param("id")}: ${error}`);
+    return c.json({ error: "Database unavailable - using localStorage", details: String(error) }, 503);
+  }
+});
+
 // Update post-it color
 app.put("/make-server-3ea9e007/postits/:id/color", async (c) => {
   try {
