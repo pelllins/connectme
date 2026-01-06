@@ -1,7 +1,8 @@
-import { projectId, publicAnonKey } from '../../../utils/supabase/info';
+import { supabaseUrl, supabaseAnonKey } from '../../../utils/supabase/info';
 import { PostIt } from '../types';
 
-const API_URL = `https://${projectId}.supabase.co/functions/v1/make-server-3ea9e007`;
+const baseUrl = (supabaseUrl || '').replace(/\/$/, '');
+const API_URL = `${baseUrl}/functions/v1/make-server-3ea9e007`;
 const STORAGE_KEY = 'connectme_postits';
 
 // LocalStorage fallback functions
@@ -36,7 +37,7 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${publicAnonKey}`,
+        'Authorization': `Bearer ${supabaseAnonKey}`,
         ...options.headers,
       },
     });
