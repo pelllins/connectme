@@ -776,9 +776,8 @@ function App() {
       setIsBackendOnline(true);
     } catch (error) {
       console.error('❌ Failed to save participation change (reverting locally):', error);
+      // Keep local optimistic state and rely on localStorage so refresh doesn't lose it
       setIsBackendOnline(false);
-      persistPostIts(previousPostIts);
-      persistJoined(previousJoined);
     }
   };
 
