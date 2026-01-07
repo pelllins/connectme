@@ -2,7 +2,8 @@ import { supabaseUrl, supabaseAnonKey } from '../../../utils/supabase/info';
 import { PostIt } from '../types';
 
 const baseUrl = (supabaseUrl || '').replace(/\/$/, '');
-const API_URL = `${baseUrl}/functions/v1/make-server-3ea9e007`;
+// Function name is "server"; route prefix is "/make-server-3ea9e007"
+const API_URL = `${baseUrl}/functions/v1/server/make-server-3ea9e007`;
 const STORAGE_KEY = 'connectme_postits';
 
 // Debug: Log credentials on init

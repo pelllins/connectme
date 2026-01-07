@@ -731,9 +731,16 @@ function App() {
       setIsBackendOnline(true);
     } catch (error) {
       console.error('❌ Failed to create post-it on server:', error);
+      // Offline fallback: keep the new post-it locally
+      const updatedList = [...postIts, newPostIt];
+      setPostIts(updatedList);
+      try {
+        localStorage.setItem('connectme_postits', JSON.stringify(updatedList));
+      } catch (e) {
+        console.warn('Failed to cache locally after create error:', e);
+      }
       setIsBackendOnline(false);
-      alert('Errore: impossibile creare il post-it sul server. Controlla la connessione.');
-      throw error;
+      alert('Server non raggiungibile: post-it creato in locale.');
     }
   };
 
@@ -763,13 +770,14 @@ function App() {
       }
     } catch (error) {
       console.error('❌ Failed to save position to server:', error);
-      // Revert optimistic update
-      const revertedPostIts = postIts.map((post) =>
-        post.id === id ? { ...post, position: post.position } : post
-      );
-      setPostIts(revertedPostIts);
+      // Keep optimistic update and persist locally as fallback
+      try {
+        localStorage.setItem('connectme_postits', JSON.stringify(updatedPostIts));
+      } catch (e) {
+        console.warn('Failed to cache locally after position error:', e);
+      }
       setIsBackendOnline(false);
-      alert('Errore: impossibile salvare la posizione sul server. Controlla la connessione.');
+      alert('Server non raggiungibile: posizione salvata in locale.');
     }
   };
 
@@ -811,11 +819,15 @@ function App() {
       setIsBackendOnline(true);
     } catch (error) {
       console.error('❌ Failed to save participation to server:', error);
-      // Revert optimistic update
-      setPostIts(postIts);
-      setJoinedIds(joinedIds);
+      // Keep optimistic update but persist locally as fallback
+      try {
+        localStorage.setItem('connectme_postits', JSON.stringify(nextList));
+        localStorage.setItem('connectme_joined', JSON.stringify(nextJoined));
+      } catch (e) {
+        console.warn('Failed to cache locally after server error:', e);
+      }
       setIsBackendOnline(false);
-      alert('Errore: impossibile salvare la partecipazione sul server. Controlla la connessione.');
+      alert('Server non raggiungibile: partecipazione salvata in locale.');
     }
   };
 
