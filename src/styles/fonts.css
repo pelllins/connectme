@@ -1,0 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+	--font-heading: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+	--font-body: 'Inter', 'Space Grotesk', system-ui, -apple-system, sans-serif;
+}
