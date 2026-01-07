@@ -291,37 +291,39 @@ function App() {
     // Optimistic update
     setPostIts(nextList);
 
+    // Helper: timeout for slow mobile networks
+    const withTimeout = async <T,>(promise: Promise<T>, ms: number): Promise<T> => {
+      return await Promise.race([
+        promise,
+        new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+      ]) as T;
+    };
+
     try {
       // Mark that we're updating
       isUpdatingFromRealtime.current = true;
-      
-      // Save to Supabase
-      const saved = await savePostIt(updatedPost);
-      console.log('✅ Participation saved on Supabase');
-      
-      // Sync with server result
-      const syncedList = nextList.map(p => p.id === id ? saved : p);
-      setPostIts(syncedList);
-      
-      // Cache locally after successful server save
-      try {
-        localStorage.setItem('connectme_postits', JSON.stringify(syncedList));
-      } catch (e) {
-        console.warn('Failed to cache locally:', e);
-      }
+
+      const op = isJoined
+        ? removeParticipant(id, userMatricola)
+        : addParticipant(id, userMatricola);
+
+      // Use a 5s timeout to avoid long hangs on mobile
+      const saved = await withTimeout(op, 5000);
+      console.log('✅ Participation saved on backend');
+
+      // Update with server result (source of truth)
+      setPostIts(list => list.map(p => (p.id === id ? saved : p)));
     } catch (error) {
-      console.error('❌ Failed to save participation to Supabase:', error);
-      // Keep optimistic update and save locally as fallback
-      try {
-        localStorage.setItem('connectme_postits', JSON.stringify(nextList));
-      } catch (e) {
-        console.warn('Failed to cache locally:', e);
+      console.error('❌ Participation update failed or timed out:', error);
+      // Revert optimistic change on hard failure (not timeout-only)
+      // If it was just a timeout, Realtime may still sync later.
+      if ((error as Error)?.message !== 'timeout') {
+        setPostIts(list => list.map(p => (p.id === id ? current : p)));
       }
-      alert('Server error: partecipazione salvata in locale.');
     } finally {
       setTimeout(() => {
         isUpdatingFromRealtime.current = false;
-      }, 1000);
+      }, 800);
     }
   };
 
