@@ -105,11 +105,31 @@ export async function getAllPostIts(): Promise<PostIt[]> {
       position: postIt.position || { x: 100 + Math.random() * 300, y: 100 + Math.random() * 200 }
     }));
     
-    // If backend has data, use it and save to localStorage
+    // If backend has data, merge with local participants (to preserve optimistic changes)
     if (validBackendPostIts.length > 0) {
-      console.log('✅ Backend is online - using backend data');
-      saveToLocalStorage(validBackendPostIts);
-      return validBackendPostIts;
+      console.log('✅ Backend is online - merging with local data (participants)');
+      let merged = validBackendPostIts;
+      if (localData && localData.length > 0) {
+        const localById = new Map(localData.map(p => [p.id, p] as const));
+        merged = validBackendPostIts.map(p => {
+          const local = localById.get(p.id);
+          if (!local) return p;
+          // Preserve local participantIds/participants if they differ
+          const localPartIds = local.participantIds || [];
+          const backendPartIds = p.participantIds || [];
+          const differs = localPartIds.length !== backendPartIds.length || localPartIds.some(id => !backendPartIds.includes(id));
+          if (differs) {
+            return {
+              ...p,
+              participantIds: localPartIds,
+              participants: local.participants,
+            };
+          }
+          return p;
+        });
+      }
+      saveToLocalStorage(merged);
+      return merged;
     }
     
     // If backend is empty but localStorage has data, sync localStorage to backend
