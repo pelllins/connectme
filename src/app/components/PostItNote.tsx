@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Users } from 'lucide-react';
@@ -16,7 +16,7 @@ interface PostItNoteProps {
   isJoined?: boolean;
 }
 
-export function PostItNote({ 
+function PostItNoteInner({ 
   postIt, 
   onClick, 
   onDoubleClick, 
@@ -137,8 +137,8 @@ export function PostItNote({
       }}
       className={`absolute select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
       style={{
-        left: postIt.position.x,
-        top: postIt.position.y,
+        transform: `translate3d(${postIt.position.x}px, ${postIt.position.y}px, 0)`,
+        willChange: 'transform',
         width: '240px',
         minHeight: '200px',
         pointerEvents: isFiltered ? 'none' : 'auto',
@@ -210,3 +210,18 @@ export function PostItNote({
     </motion.div>
   );
 }
+
+// Memoize to avoid unnecessary re-renders from inline handler identities
+const areEqual = (prev: PostItNoteProps, next: PostItNoteProps) => {
+  return (
+    prev.postIt === next.postIt &&
+    prev.isHighlighted === next.isHighlighted &&
+    prev.isFiltered === next.isFiltered &&
+    prev.zoom === next.zoom &&
+    prev.isJoined === next.isJoined &&
+    prev.onPositionChange === next.onPositionChange
+    // Intentionally ignore onClick/onDoubleClick identity changes
+  );
+};
+
+export const PostItNote = memo(PostItNoteInner, areEqual);

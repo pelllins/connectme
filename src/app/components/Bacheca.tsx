@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Search, Sparkles, Plus, X, SlidersHorizontal, Maximize2, Users } from 'lucide-react';
@@ -58,6 +58,11 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
     return true;
   };
 
+  // Memoize the visible post-its to avoid re-rendering hidden ones
+  const visiblePostIts = useMemo(() => {
+    return postIts.filter(isPostItActive);
+  }, [postIts, searchQuery, selectedCategory, selectedCampus, showJoinedOnly]);
+
   // Count how many post-its the user is participating in
   const userJoinedCount = postIts.filter(post => (post.participantIds || []).includes('10123456')).length;
 
@@ -110,12 +115,18 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
     }, 0);
   };
 
-  // Wheel zoom centered on mouse position
+  // Wheel zoom centered on mouse position (throttled)
+  const lastWheelTsRef = useRef(0);
   const handleWheel = (e: React.WheelEvent) => {
     if (e.ctrlKey || e.metaKey) {
       e.preventDefault();
       
       if (!containerRef.current) return;
+      const now = Date.now();
+      if (now - lastWheelTsRef.current < 16) {
+        return; // ~60fps throttle
+      }
+      lastWheelTsRef.current = now;
       
       const container = containerRef.current;
       const rect = container.getBoundingClientRect();
@@ -136,12 +147,12 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
       const delta = e.deltaY > 0 ? -0.05 : 0.05;
       const newZoom = Math.max(0.3, Math.min(2, zoom + delta));
       
-      // Update zoom
-      setZoom(newZoom);
-      
-      // Adjust scroll
-      container.scrollLeft = pointX * newZoom - mouseX;
-      container.scrollTop = pointY * newZoom - mouseY;
+      // Update zoom + scroll within a frame
+      requestAnimationFrame(() => {
+        setZoom(newZoom);
+        container.scrollLeft = pointX * newZoom - mouseX;
+        container.scrollTop = pointY * newZoom - mouseY;
+      });
     }
   };
 
@@ -178,11 +189,18 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
     }
   };
 
+  // Touch zoom with center point preservation (throttled)
+  const lastPinchTsRef = useRef(0);
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 2 && initialPinchDistance !== null) {
       e.preventDefault();
       
       if (!containerRef.current) return;
+      const now = Date.now();
+      if (now - lastPinchTsRef.current < 16) {
+        return; // ~60fps throttle
+      }
+      lastPinchTsRef.current = now;
       
       const container = containerRef.current;
       const rect = container.getBoundingClientRect();
@@ -204,12 +222,12 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
       const centerX = (touch1.clientX + touch2.clientX) / 2 - rect.left;
       const centerY = (touch1.clientY + touch2.clientY) / 2 - rect.top;
       
-      // Update zoom
-      setZoom(newZoom);
-      
-      // Adjust scroll
-      container.scrollLeft = touchCenter.x * newZoom - centerX;
-      container.scrollTop = touchCenter.y * newZoom - centerY;
+      // Update zoom + scroll within a frame
+      requestAnimationFrame(() => {
+        setZoom(newZoom);
+        container.scrollLeft = touchCenter.x * newZoom - centerX;
+        container.scrollTop = touchCenter.y * newZoom - centerY;
+      });
     }
   };
 
@@ -386,7 +404,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
             />
             
             {/* Post-its */}
-            {postIts.map((postIt) => (
+            {visiblePostIts.map((postIt) => (
               <PostItNote
                 key={postIt.id}
                 postIt={postIt}
@@ -394,7 +412,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
                 onDoubleClick={() => handlePostItDoubleClick(postIt)}
                 onPositionChange={onUpdatePostItPosition}
                 isHighlighted={highlightedPostId === postIt.id}
-                isFiltered={!isPostItActive(postIt)}
+                isFiltered={false}
                 zoom={zoom}
                 isJoined={(postIt.participantIds || []).includes('10123456')}
               />
