@@ -22,6 +22,7 @@ function App() {
   const [isBackendOnline, setIsBackendOnline] = useState(true);
   const [joinedIds, setJoinedIds] = useState<string[]>([]);
   const isUpdatingFromRealtime = useRef(false);
+  const participateInFlightRef = useRef<Set<string>>(new Set());
   
   useEffect(() => {
     try {
@@ -261,6 +262,10 @@ function App() {
   };
   
   const handleParticipate = async (id: string) => {
+    // Prevent duplicate requests for the same post-it
+    const inFlight = (participateInFlightRef.current || (participateInFlightRef.current = new Set<string>()));
+    if (inFlight.has(id)) return;
+    inFlight.add(id);
     const current = postIts.find(p => p.id === id);
     if (!current) return;
 
@@ -323,6 +328,7 @@ function App() {
     } finally {
       setTimeout(() => {
         isUpdatingFromRealtime.current = false;
+        inFlight.delete(id);
       }, 800);
     }
   };

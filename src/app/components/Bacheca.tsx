@@ -78,6 +78,20 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
     setDetailPostIt(null);
   };
 
+  // Optimistic update of detail view on participate
+  const handleDetailParticipate = async () => {
+    if (!detailPostIt) return;
+    const userId = '10123456';
+    const alreadyJoined = (detailPostIt.participantIds || []).includes(userId);
+    const nextParticipants = Math.max(0, (detailPostIt.participants || 0) + (alreadyJoined ? -1 : 1));
+    const nextIds = alreadyJoined
+      ? (detailPostIt.participantIds || []).filter(id => id !== userId)
+      : [ ...(detailPostIt.participantIds || []), userId ];
+    setDetailPostIt({ ...detailPostIt, participants: nextParticipants, participantIds: nextIds });
+    // Trigger global update
+    await onParticipate(detailPostIt.id);
+  };
+
   const clearFilter = (type: 'category' | 'campus' | 'day') => {
     if (type === 'category') setSelectedCategory(null);
     if (type === 'campus') setSelectedCampus(null);
@@ -457,7 +471,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
         <PostItDetail 
           postIt={detailPostIt} 
           onClose={handleCloseDetail} 
-          onParticipate={() => detailPostIt && onParticipate(detailPostIt.id)}
+          onParticipate={handleDetailParticipate}
           userMatricola="10123456"
         />
 
