@@ -137,8 +137,8 @@ function PostItNoteInner({
       }}
       className={`absolute select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
       style={{
-        transform: `translate3d(${postIt.position.x}px, ${postIt.position.y}px, 0)`,
-        willChange: 'transform',
+        left: postIt.position.x,
+        top: postIt.position.y,
         width: '240px',
         minHeight: '200px',
         pointerEvents: isFiltered ? 'none' : 'auto',
