@@ -801,9 +801,9 @@ function App() {
     setJoinedIds(nextJoined);
 
     try {
-      // Save to server
+      // Save to Supabase
       const saved = await savePostIt(updatedPost);
-      console.log('✅ Participation saved on server');
+      console.log('✅ Participation saved on Supabase');
       
       // Sync with server result
       const syncedList = nextList.map(p => p.id === id ? saved : p);
@@ -816,18 +816,17 @@ function App() {
       } catch (e) {
         console.warn('Failed to cache locally:', e);
       }
-      setIsBackendOnline(true);
     } catch (error) {
-      console.error('❌ Failed to save participation to server:', error);
-      // Keep optimistic update but persist locally as fallback
+      console.error('❌ Failed to save participation to Supabase:', error);
+      console.log('📋 Error details:', JSON.stringify(error, null, 2));
+      // Keep optimistic update and save locally as fallback
       try {
         localStorage.setItem('connectme_postits', JSON.stringify(nextList));
         localStorage.setItem('connectme_joined', JSON.stringify(nextJoined));
       } catch (e) {
-        console.warn('Failed to cache locally after server error:', e);
+        console.warn('Failed to cache locally:', e);
       }
-      setIsBackendOnline(false);
-      alert('Server non raggiungibile: partecipazione salvata in locale.');
+      alert('Server error: partecipazione salvata in locale. Apri DevTools (F12) per dettagli.');
     }
   };
 
@@ -844,7 +843,7 @@ function App() {
         showMenu={activeSection === 'bacheca'} 
         onMenuClick={() => {}} 
         title={activeSection === 'bacheca' ? 'Connect-me' : 'Io e il Polimi'}
-        showLogo={activeSection === 'bacheca'}
+        showLogo={true}
       />
       
       {activeSection === 'home' && (
