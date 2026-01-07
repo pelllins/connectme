@@ -14,10 +14,9 @@ interface BachecaProps {
   onUpdatePostItPosition: (id: string, x: number, y: number) => void;
   onCreatePostIt: (postIt: Omit<PostIt, 'id' | 'position' | 'participants'>) => void;
   onParticipate: (id: string) => void;
-  joinedIds?: string[];
 }
 
-export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onParticipate, joinedIds = [] }: BachecaProps) {
+export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onParticipate }: BachecaProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedCampus, setSelectedCampus] = useState<Campus | null>(null);
@@ -53,11 +52,14 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
     if (selectedCampus && post.campus !== selectedCampus) {
       return false;
     }
-    if (showJoinedOnly && !joinedIds.includes(post.id)) {
+    if (showJoinedOnly && !(post.participantIds || []).includes('10123456')) {
       return false;
     }
     return true;
   };
+
+  // Count how many post-its the user is participating in
+  const userJoinedCount = postIts.filter(post => (post.participantIds || []).includes('10123456')).length;
 
   const handlePostItClick = (postId: string) => {
     setHighlightedPostId(postId);
@@ -65,17 +67,6 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
 
   const handlePostItDoubleClick = (postIt: PostIt) => {
     setDetailPostIt(postIt);
-  };
-
-  const handleParticipateClick = () => {
-    if (!detailPostIt) return;
-    const isJoined = (detailPostIt.participantIds || []).includes('10123456'); // Marco's matricola
-    const delta = isJoined ? -1 : 1;
-    onParticipate(detailPostIt.id);
-    setDetailPostIt({ 
-      ...detailPostIt, 
-      participants: Math.max(0, (detailPostIt.participants || 0) + delta),
-    });
   };
 
   const handleCloseDetail = () => {
@@ -262,7 +253,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
                 <span className={`text-xs font-semibold px-1.5 md:px-2 py-0.5 rounded-full ${
                   showJoinedOnly ? 'bg-emerald-200 text-emerald-900' : 'bg-white text-slate-700'
                 }`}>
-                  {joinedIds.length}
+                  {userJoinedCount}
                 </span>
               </button>
 
@@ -405,7 +396,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
                 isHighlighted={highlightedPostId === postIt.id}
                 isFiltered={!isPostItActive(postIt)}
                 zoom={zoom}
-                isJoined={joinedIds.includes(postIt.id)}
+                isJoined={(postIt.participantIds || []).includes('10123456')}
               />
             ))}
           </div>
@@ -448,8 +439,8 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
         <PostItDetail 
           postIt={detailPostIt} 
           onClose={handleCloseDetail} 
-          onParticipate={handleParticipateClick}
-          isJoined={detailPostIt ? joinedIds.includes(detailPostIt.id) : false}
+          onParticipate={() => detailPostIt && onParticipate(detailPostIt.id)}
+          userMatricola="10123456"
         />
 
         {/* Create PostIt Modal */}

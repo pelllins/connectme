@@ -264,22 +264,27 @@ function App() {
     const current = postIts.find(p => p.id === id);
     if (!current) return;
 
-    const isJoined = (current.participantIds || []).includes(userProfile.matricola);
+    // Usa participantIds dal postIt, non joinedIds
+    const userMatricola = userProfile.matricola;
+    const isJoined = (current.participantIds || []).includes(userMatricola);
     
-    // Update participantIds array
-    let updatedParticipantIds = [...(current.participantIds || [])];
+    let updatedPost: PostIt;
+    
     if (isJoined) {
-      updatedParticipantIds = updatedParticipantIds.filter(m => m !== userProfile.matricola);
+      // Rimuovi da partecipanti
+      updatedPost = {
+        ...current,
+        participants: Math.max(0, (current.participants || 1) - 1),
+        participantIds: (current.participantIds || []).filter(id => id !== userMatricola),
+      };
     } else {
-      updatedParticipantIds.push(userProfile.matricola);
+      // Aggiungi ai partecipanti
+      updatedPost = {
+        ...current,
+        participants: (current.participants || 0) + 1,
+        participantIds: [...(current.participantIds || []), userMatricola],
+      };
     }
-
-    const delta = isJoined ? -1 : 1;
-    const updatedPost: PostIt = {
-      ...current,
-      participants: Math.max(0, (current.participants || 0) + delta),
-      participantIds: updatedParticipantIds,
-    };
 
     const nextList = postIts.map(p => p.id === id ? updatedPost : p);
 
@@ -298,7 +303,7 @@ function App() {
       const syncedList = nextList.map(p => p.id === id ? saved : p);
       setPostIts(syncedList);
       
-      // Cache locally
+      // Cache locally after successful server save
       try {
         localStorage.setItem('connectme_postits', JSON.stringify(syncedList));
       } catch (e) {
@@ -312,7 +317,7 @@ function App() {
       } catch (e) {
         console.warn('Failed to cache locally:', e);
       }
-      alert('Errore server: partecipazione salvata localmente.');
+      alert('Server error: partecipazione salvata in locale.');
     } finally {
       setTimeout(() => {
         isUpdatingFromRealtime.current = false;
