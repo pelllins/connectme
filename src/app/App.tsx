@@ -264,20 +264,27 @@ function App() {
     const current = postIts.find(p => p.id === id);
     if (!current) return;
 
-    const isJoined = joinedIds.includes(id);
-    const delta = isJoined ? -1 : 1;
+    const isJoined = (current.participantIds || []).includes(userProfile.matricola);
+    
+    // Update participantIds array
+    let updatedParticipantIds = [...(current.participantIds || [])];
+    if (isJoined) {
+      updatedParticipantIds = updatedParticipantIds.filter(m => m !== userProfile.matricola);
+    } else {
+      updatedParticipantIds.push(userProfile.matricola);
+    }
 
+    const delta = isJoined ? -1 : 1;
     const updatedPost: PostIt = {
       ...current,
       participants: Math.max(0, (current.participants || 0) + delta),
+      participantIds: updatedParticipantIds,
     };
 
     const nextList = postIts.map(p => p.id === id ? updatedPost : p);
-    const nextJoined = isJoined ? joinedIds.filter(j => j !== id) : [...joinedIds, id];
 
     // Optimistic update
     setPostIts(nextList);
-    setJoinedIds(nextJoined);
 
     try {
       // Mark that we're updating
@@ -291,24 +298,21 @@ function App() {
       const syncedList = nextList.map(p => p.id === id ? saved : p);
       setPostIts(syncedList);
       
-      // Cache locally after successful server save
+      // Cache locally
       try {
         localStorage.setItem('connectme_postits', JSON.stringify(syncedList));
-        localStorage.setItem('connectme_joined', JSON.stringify(nextJoined));
       } catch (e) {
         console.warn('Failed to cache locally:', e);
       }
     } catch (error) {
       console.error('❌ Failed to save participation to Supabase:', error);
-      console.log('📋 Error details:', JSON.stringify(error, null, 2));
       // Keep optimistic update and save locally as fallback
       try {
         localStorage.setItem('connectme_postits', JSON.stringify(nextList));
-        localStorage.setItem('connectme_joined', JSON.stringify(nextJoined));
       } catch (e) {
         console.warn('Failed to cache locally:', e);
       }
-      alert('Server error: partecipazione salvata in locale. Apri DevTools (F12) per dettagli.');
+      alert('Errore server: partecipazione salvata localmente.');
     } finally {
       setTimeout(() => {
         isUpdatingFromRealtime.current = false;
@@ -347,7 +351,6 @@ function App() {
           onUpdatePostItPosition={handleUpdatePostItPosition}
           onCreatePostIt={handleCreatePostIt}
           onParticipate={handleParticipate}
-          joinedIds={joinedIds}
         />
       )}
 

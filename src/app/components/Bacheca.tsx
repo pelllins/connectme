@@ -14,10 +14,10 @@ interface BachecaProps {
   onUpdatePostItPosition: (id: string, x: number, y: number) => void;
   onCreatePostIt: (postIt: Omit<PostIt, 'id' | 'position' | 'participants'>) => void;
   onParticipate: (id: string) => void;
-  joinedIds: string[];
+  joinedIds?: string[];
 }
 
-export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onParticipate, joinedIds }: BachecaProps) {
+export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onParticipate, joinedIds = [] }: BachecaProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedCampus, setSelectedCampus] = useState<Campus | null>(null);
@@ -69,7 +69,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
 
   const handleParticipateClick = () => {
     if (!detailPostIt) return;
-    const isJoined = joinedIds.includes(detailPostIt.id);
+    const isJoined = (detailPostIt.participantIds || []).includes('10123456'); // Marco's matricola
     const delta = isJoined ? -1 : 1;
     onParticipate(detailPostIt.id);
     setDetailPostIt({ 
