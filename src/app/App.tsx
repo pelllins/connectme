@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { Header } from './components/Header';
 import { NavigationBar } from './components/NavigationBar';
 import { HomePage } from './components/HomePage';
+import { IoEIlPolimi } from './components/IoEIlPolimi';
 import { Bacheca } from './components/Bacheca';
 import { Agenda } from './components/Agenda';
+import { Supporto } from './components/Supporto';
 import { PostIt, UserProfile } from './types';
 import { getAllPostIts, updatePostItPosition, savePostIt, updatePostItColor, batchSavePostIts, checkBackendHealth, syncToBackend, subscribeToPostIts } from './utils/api';
 
@@ -324,10 +326,10 @@ function App() {
       )}
 
       {activeSection === 'polimi' && (
-        <HomePage 
+        <IoEIlPolimi 
           userProfile={userProfile} 
-          recentPostIts={recentPostIts}
-          onViewAllPosts={handleViewAllPosts}
+          imminentActivity={{ name: 'TYPE DESIGN', date: 'GIO 08 GEN', time: '09:15 - 13:15' }}
+          exams={{ iscrizioni: 1, esiti: 0 }}
         />
       )}
 
@@ -336,6 +338,10 @@ function App() {
           <h2 className="text-gray-900 mb-4">Campus</h2>
           <p className="text-gray-600">Sezione in arrivo...</p>
         </div>
+      )}
+
+      {activeSection === 'supporto' && (
+        <Supporto />
       )}
 
       <NavigationBar 

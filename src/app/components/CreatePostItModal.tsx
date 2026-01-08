@@ -95,7 +95,7 @@ export function CreatePostItModal({ isOpen, onClose, onSave }: CreatePostItModal
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header - Fixed */}
-          <div className="bg-gradient-to-r from-[#0F3352] via-[#184d75] to-[#3CA9D3] px-4 py-3 flex items-center justify-between flex-shrink-0 rounded-t-2xl text-white shadow-inner">
+          <div className="bg-[#15325B] px-4 py-3 flex items-center justify-between flex-shrink-0 rounded-t-2xl text-white shadow-inner">
             <h2 className="text-white text-lg font-semibold">Crea Nuovo Post-it</h2>
             <button
               onClick={onClose}
@@ -106,7 +106,7 @@ export function CreatePostItModal({ isOpen, onClose, onSave }: CreatePostItModal
           </div>
 
           {/* Form - Scrollable */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-white via-slate-50 to-white">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
             {/* Category Selection */}
             <div>
               <label className="block text-slate-800 mb-2 text-sm font-medium">
@@ -213,7 +213,7 @@ export function CreatePostItModal({ isOpen, onClose, onSave }: CreatePostItModal
             <button
               type="button"
               onClick={() => handleSubmit()}
-              className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#0F3352] via-[#184d75] to-[#3CA9D3] text-white rounded-lg hover:opacity-90 transition-opacity shadow-md text-sm font-medium"
+              className="flex-1 px-4 py-2.5 bg-[#15325B] text-white rounded-lg hover:opacity-90 transition-opacity shadow-md text-sm font-medium"
             >
               Pubblica
             </button>

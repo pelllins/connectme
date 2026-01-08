@@ -11,13 +11,10 @@ interface HeaderProps {
 export function Header({ showMenu = false, onMenuClick, title = 'Io e il Polimi', showLogo = false }: HeaderProps) {
   return (
     <header
-      className="bg-[#0F3352] w-full"
-      style={{
-        paddingTop: 'env(safe-area-inset-top)',
-        minHeight: 'calc(env(safe-area-inset-top) + 44px)',
-        height: 'calc(env(safe-area-inset-top) + 44px)',
-        boxShadow: '0 1px 0 rgba(0,0,0,0.04)'
-      }}
-    />
+      className="w-full fixed top-0 left-0 z-50"
+      style={{ background: '#15325B', minHeight: 'env(safe-area-inset-top, 24px)', height: 'max(env(safe-area-inset-top, 24px), 24px)' }}
+    >
+      <div style={{ height: 'env(safe-area-inset-top, 24px)' }} />
+    </header>
   );
 }

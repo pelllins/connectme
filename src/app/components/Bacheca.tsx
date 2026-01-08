@@ -299,7 +299,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
         </div>
 
         {/* Filter Bar - Overlaid on top */}
-        <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">
+        <div className="absolute top-6 left-0 right-0 z-40 pointer-events-none">
           <div className="mx-2 md:mx-4 mt-2 md:mt-4 rounded-xl md:rounded-2xl bg-white/90 backdrop-blur border border-slate-200 shadow-sm px-2 md:px-5 py-2 md:py-4 pointer-events-auto">
             {/* First Row - Per Te and Search */}
             <div className="flex items-center gap-1.5 md:gap-3 mb-2 md:mb-3">
