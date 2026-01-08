@@ -30,6 +30,10 @@ function PostItNoteInner({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const dragStartPos = useRef({ x: 0, y: 0 });
   
+  // Mobile drag delay
+  const dragDelay = 120; // ms
+  let dragTimeout: NodeJS.Timeout | null = null;
+
   const [{ isDragging: isBeingDragged }, dragRef, preview] = useDrag({
     type: 'POST_IT',
     item: () => {
@@ -56,6 +60,10 @@ function PostItNoteInner({
       }
       setDragOffset({ x: 0, y: 0 });
     },
+    // Custom delay for mobile
+    options: {
+      delay: dragDelay
+    }
   });
 
   // Hide the default HTML5 drag preview
@@ -143,7 +151,12 @@ function PostItNoteInner({
         pointerEvents: isFiltered ? 'none' : 'auto',
         opacity: isDragging ? 0 : isFiltered ? 0.25 : 1,
       }}
-      onClick={onClick}
+      onClick={() => {
+        // Porta in primo piano
+        setIsDragging(false);
+        // Puoi aggiungere qui la logica per portare il post-it sopra (es. set zIndex alto)
+        onClick();
+      }}
       onDoubleClick={onDoubleClick}
     >
       {/* Pin/Thumbtack */}
