@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Search, Sparkles, Plus, X, SlidersHorizontal, Maximize2, Users } from 'lucide-react';
@@ -41,8 +41,8 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
   const campuses: Campus[] = ['Leonardo', 'Bovisa'];
   const days = ['Oggi', 'Domani', 'Questa Settimana'];
 
-  // Check if a post-it matches the current filters
-  const isPostItActive = (post: PostIt) => {
+  // Check if a post-it matches the current filters (memoized)
+  const isPostItActive = useCallback((post: PostIt) => {
     if (searchQuery && !post.content.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
@@ -56,7 +56,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
       return false;
     }
     return true;
-  };
+  }, [searchQuery, selectedCategory, selectedCampus, showJoinedOnly]);
 
   // Memoize the visible post-its to avoid re-rendering hidden ones
   const visiblePostIts = useMemo(() => {
@@ -66,13 +66,13 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
   // Count how many post-its the user is participating in
   const userJoinedCount = postIts.filter(post => (post.participantIds || []).includes('10123456')).length;
 
-  const handlePostItClick = (postId: string) => {
+  const handlePostItClick = useCallback((postId: string) => {
     setHighlightedPostId(postId);
-  };
+  }, []);
 
-  const handlePostItDoubleClick = (postIt: PostIt) => {
+  const handlePostItDoubleClick = useCallback((postIt: PostIt) => {
     setDetailPostIt(postIt);
-  };
+  }, []);
 
   const handleCloseDetail = () => {
     setDetailPostIt(null);
@@ -253,10 +253,54 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-100">
-        {/* Filter Bar - Compact Mobile Design */}
-        <div className="px-2 md:px-4 py-2 md:py-4 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto rounded-xl md:rounded-2xl bg-white/90 backdrop-blur border border-slate-200 shadow-sm px-2 md:px-5 py-2 md:py-4">
+      <div className="h-screen relative bg-gradient-to-br from-slate-50 via-white to-slate-100">
+        {/* Bacheca Area with Zoom and Scroll - Full Screen */}
+        <div 
+          ref={containerRef}
+          className="absolute inset-0 overflow-auto bg-gradient-to-br from-gray-50 to-gray-100"
+          onWheel={handleWheel}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div
+            className="absolute"
+            style={{
+              width: '4000px',
+              height: '3000px',
+              transform: `scale(${zoom})`,
+              transformOrigin: '0 0',
+            }}
+          >
+            {/* Grid background */}
+            <div 
+              className="absolute inset-0" 
+              style={{
+                backgroundImage: 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)',
+                backgroundSize: '40px 40px',
+              }}
+            />
+            
+            {/* Post-its */}
+            {postIts.map((postIt) => (
+              <PostItNote
+                key={postIt.id}
+                postIt={postIt}
+                onClick={() => handlePostItClick(postIt.id)}
+                onDoubleClick={() => handlePostItDoubleClick(postIt)}
+                onPositionChange={onUpdatePostItPosition}
+                isHighlighted={highlightedPostId === postIt.id}
+                isFiltered={!isPostItActive(postIt)}
+                zoom={zoom}
+                isJoined={(postIt.participantIds || []).includes('10123456')}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Filter Bar - Overlaid on top */}
+        <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">
+          <div className="mx-2 md:mx-4 mt-2 md:mt-4 rounded-xl md:rounded-2xl bg-white/90 backdrop-blur border border-slate-200 shadow-sm px-2 md:px-5 py-2 md:py-4 pointer-events-auto">
             {/* First Row - Per Te and Search */}
             <div className="flex items-center gap-1.5 md:gap-3 mb-2 md:mb-3">
               <button
@@ -387,50 +431,6 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
                 </motion.div>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* Bacheca Area with Zoom and Scroll */}
-        <div 
-          ref={containerRef}
-          className="flex-1 relative overflow-auto bg-gradient-to-br from-gray-50 to-gray-100"
-          onWheel={handleWheel}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div
-            className="absolute"
-            style={{
-              width: '4000px',
-              height: '3000px',
-              transform: `scale(${zoom})`,
-              transformOrigin: '0 0',
-            }}
-          >
-            {/* Grid background */}
-            <div 
-              className="absolute inset-0" 
-              style={{
-                backgroundImage: 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)',
-                backgroundSize: '40px 40px',
-              }}
-            />
-            
-            {/* Post-its */}
-            {visiblePostIts.map((postIt) => (
-              <PostItNote
-                key={postIt.id}
-                postIt={postIt}
-                onClick={() => handlePostItClick(postIt.id)}
-                onDoubleClick={() => handlePostItDoubleClick(postIt)}
-                onPositionChange={onUpdatePostItPosition}
-                isHighlighted={highlightedPostId === postIt.id}
-                isFiltered={false}
-                zoom={zoom}
-                isJoined={(postIt.participantIds || []).includes('10123456')}
-              />
-            ))}
           </div>
         </div>
 

@@ -5,7 +5,7 @@ import { HomePage } from './components/HomePage';
 import { Bacheca } from './components/Bacheca';
 import { Agenda } from './components/Agenda';
 import { PostIt, UserProfile } from './types';
-import { getAllPostIts, updatePostItPosition, savePostIt, updatePostItColor, batchSavePostIts, checkBackendHealth, syncToBackend, addParticipant, removeParticipant, subscribeToPostIts } from './utils/api';
+import { getAllPostIts, updatePostItPosition, savePostIt, updatePostItColor, batchSavePostIts, checkBackendHealth, syncToBackend, subscribeToPostIts } from './utils/api';
 
 function App() {
   const [activeSection, setActiveSection] = useState(() => {
@@ -262,75 +262,27 @@ function App() {
   };
   
   const handleParticipate = async (id: string) => {
-    // Prevent duplicate requests for the same post-it
-    const inFlight = (participateInFlightRef.current || (participateInFlightRef.current = new Set<string>()));
-    if (inFlight.has(id)) return;
-    inFlight.add(id);
+    // Local-only toggle: no backend persistence as requested
     const current = postIts.find(p => p.id === id);
     if (!current) return;
-
-    // Usa participantIds dal postIt, non joinedIds
     const userMatricola = userProfile.matricola;
     const isJoined = (current.participantIds || []).includes(userMatricola);
-    
-    let updatedPost: PostIt;
-    
-    if (isJoined) {
-      // Rimuovi da partecipanti
-      updatedPost = {
-        ...current,
-        participants: Math.max(0, (current.participants || 1) - 1),
-        participantIds: (current.participantIds || []).filter(id => id !== userMatricola),
-      };
-    } else {
-      // Aggiungi ai partecipanti
-      updatedPost = {
-        ...current,
-        participants: (current.participants || 0) + 1,
-        participantIds: [...(current.participantIds || []), userMatricola],
-      };
-    }
-
-    const nextList = postIts.map(p => p.id === id ? updatedPost : p);
-
-    // Optimistic update
+    const updatedPost: PostIt = isJoined
+      ? {
+          ...current,
+          participants: Math.max(0, (current.participants || 1) - 1),
+          participantIds: (current.participantIds || []).filter(pid => pid !== userMatricola),
+        }
+      : {
+          ...current,
+          participants: (current.participants || 0) + 1,
+          participantIds: [...(current.participantIds || []), userMatricola],
+        };
+    const nextList = postIts.map(p => (p.id === id ? updatedPost : p));
     setPostIts(nextList);
-
-    // Helper: timeout for slow mobile networks
-    const withTimeout = async <T,>(promise: Promise<T>, ms: number): Promise<T> => {
-      return await Promise.race([
-        promise,
-        new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
-      ]) as T;
-    };
-
     try {
-      // Mark that we're updating
-      isUpdatingFromRealtime.current = true;
-
-      const op = isJoined
-        ? removeParticipant(id, userMatricola)
-        : addParticipant(id, userMatricola);
-
-      // Use a 5s timeout to avoid long hangs on mobile
-      const saved = await withTimeout(op, 5000);
-      console.log('✅ Participation saved on backend');
-
-      // Update with server result (source of truth)
-      setPostIts(list => list.map(p => (p.id === id ? saved : p)));
-    } catch (error) {
-      console.error('❌ Participation update failed or timed out:', error);
-      // Revert optimistic change on hard failure (not timeout-only)
-      // If it was just a timeout, Realtime may still sync later.
-      if ((error as Error)?.message !== 'timeout') {
-        setPostIts(list => list.map(p => (p.id === id ? current : p)));
-      }
-    } finally {
-      setTimeout(() => {
-        isUpdatingFromRealtime.current = false;
-        inFlight.delete(id);
-      }, 800);
-    }
+      localStorage.setItem('connectme_postits', JSON.stringify(nextList));
+    } catch {}
   };
 
   const handleRemoveParticipation = async (postItId: string) => {

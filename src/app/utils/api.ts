@@ -384,20 +384,25 @@ export function subscribeToPostIts(
   onUpdate: (postIt: PostIt) => void,
   onDelete: (id: string) => void
 ) {
-  console.log('🔌 Creating Realtime channel...');
-  
+  console.log('🔌 Creating Realtime channel (kv_store_3ea9e007)...');
+
   const channel = supabase
-    .channel('postits-changes')
+    .channel('postits-kv-changes')
     .on(
       'postgres_changes',
       {
         event: 'INSERT',
         schema: 'public',
-        table: 'postits',
+        table: 'kv_store_3ea9e007',
+        filter: 'key=like.postit:%',
       },
       (payload) => {
-        console.log('🔔 Realtime INSERT:', payload.new);
-        onInsert(payload.new as PostIt);
+        const row = payload.new as { key: string; value: PostIt };
+        const val = row?.value as PostIt;
+        if (val?.id) {
+          console.log('🔔 Realtime INSERT (kv):', val);
+          onInsert(val);
+        }
       }
     )
     .on(
@@ -405,11 +410,16 @@ export function subscribeToPostIts(
       {
         event: 'UPDATE',
         schema: 'public',
-        table: 'postits',
+        table: 'kv_store_3ea9e007',
+        filter: 'key=like.postit:%',
       },
       (payload) => {
-        console.log('🔔 Realtime UPDATE:', payload.new);
-        onUpdate(payload.new as PostIt);
+        const row = payload.new as { key: string; value: PostIt };
+        const val = row?.value as PostIt;
+        if (val?.id) {
+          console.log('🔔 Realtime UPDATE (kv):', val);
+          onUpdate(val);
+        }
       }
     )
     .on(
@@ -417,11 +427,15 @@ export function subscribeToPostIts(
       {
         event: 'DELETE',
         schema: 'public',
-        table: 'postits',
+        table: 'kv_store_3ea9e007',
+        filter: 'key=like.postit:%',
       },
       (payload) => {
-        console.log('🔔 Realtime DELETE:', payload.old);
-        onDelete((payload.old as PostIt).id);
+        const oldRow = payload.old as { key: string };
+        const key = oldRow?.key || '';
+        const id = key.startsWith('postit:') ? key.slice('postit:'.length) : key;
+        console.log('🔔 Realtime DELETE (kv):', id);
+        if (id) onDelete(id);
       }
     )
     .subscribe((status, err) => {
@@ -430,10 +444,10 @@ export function subscribeToPostIts(
         console.error('❌ Realtime subscription error:', err);
       }
       if (status === 'SUBSCRIBED') {
-        console.log('✅ Successfully subscribed to Realtime!');
+        console.log('✅ Subscribed to kv_store_3ea9e007 changes!');
       }
       if (status === 'CHANNEL_ERROR') {
-        console.error('❌ Channel error - check if Realtime is enabled on the table');
+        console.error('❌ Channel error - ensure Realtime is enabled for kv_store_3ea9e007');
       }
       if (status === 'TIMED_OUT') {
         console.error('⏰ Subscription timed out');
@@ -444,7 +458,7 @@ export function subscribeToPostIts(
     });
 
   return () => {
-    console.log('🔌 Unsubscribing from Realtime');
+    console.log('🔌 Unsubscribing from Realtime (kv)');
     supabase.removeChannel(channel);
   };
 }

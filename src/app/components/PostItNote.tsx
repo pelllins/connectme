@@ -128,7 +128,6 @@ function PostItNoteInner({
         scale: isDragging ? 1.05 : 1, 
         rotate: rotation,
         zIndex: isHighlighted ? 50 : isDragging ? 100 : 1,
-        opacity: isFiltered ? 0.25 : (isDragging ? 0.3 : 1),
       }}
       transition={{ 
         type: 'spring', 
@@ -142,6 +141,7 @@ function PostItNoteInner({
         width: '240px',
         minHeight: '200px',
         pointerEvents: isFiltered ? 'none' : 'auto',
+        opacity: isFiltered ? 0.25 : 1,
       }}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
