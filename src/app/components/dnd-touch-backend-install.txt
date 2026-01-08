@@ -1,0 +1,7 @@
+Installazione necessaria:
+npm install react-dnd-touch-backend
+
+Poi aggiorna Bacheca.tsx:
+import { TouchBackend } from 'react-dnd-touch-backend';
+
+Sostituisci HTML5Backend con TouchBackend per mobile reattivo.

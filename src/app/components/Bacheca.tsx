@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo, useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { TouchBackend } from 'react-dnd-touch-backend';
 import { Search, Sparkles, Plus, X, SlidersHorizontal, Maximize2, Users } from 'lucide-react';
 import { PostIt, Category, Campus } from '../types';
 import { PostItNote } from './PostItNote';
@@ -251,8 +252,13 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
     }
   };
 
+  // Usa TouchBackend su mobile, HTML5Backend su desktop
+  const isMobile = typeof window !== 'undefined' && (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator.userAgent)
+  );
+
   return (
-    <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={isMobile ? TouchBackend : HTML5Backend} options={isMobile ? { enableMouseEvents: true } : undefined}>
       <div className="h-screen relative bg-gradient-to-br from-slate-50 via-white to-slate-100">
         {/* Bacheca Area with Zoom and Scroll - Full Screen */}
         <div 

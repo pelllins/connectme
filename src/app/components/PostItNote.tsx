@@ -141,7 +141,7 @@ function PostItNoteInner({
         width: '240px',
         minHeight: '200px',
         pointerEvents: isFiltered ? 'none' : 'auto',
-        opacity: isFiltered ? 0.25 : 1,
+        opacity: isDragging ? 0 : isFiltered ? 0.25 : 1,
       }}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
