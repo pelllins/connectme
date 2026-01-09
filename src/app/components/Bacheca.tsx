@@ -35,7 +35,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
   
   // Touch zoom state
   const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null);
-  const [initialZoom, setInitialZoom] = useState(1);
+  const [initialZoom, setInitialZoom] = useState(0.7);
   const [touchCenter, setTouchCenter] = useState({ x: 0, y: 0 });
 
   const categories: Category[] = ['Studio', 'Social', 'Sport', 'Passioni/Interessi', 'Pausa Caffè', 'Pranzo'];
@@ -108,7 +108,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
 
   const handleResetZoom = () => {
     if (!containerRef.current) {
-      setZoom(1);
+      setZoom(0.7);
       return;
     }
     
@@ -129,8 +129,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
     
     // Reset zoom
     setZoom(0.7);
-    
-    // Adjust scroll to keep the center point centered at zoom 1
+    // Adjust scroll to keep the center point centered al nuovo zoom
     setTimeout(() => {
       container.scrollLeft = contentCenterX * 0.7 - viewportCenterX;
       container.scrollTop = contentCenterY * 0.7 - viewportCenterY;
@@ -457,7 +456,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
         </div>
 
         {/* Zoom Reset Control */}
-        {zoom !== 1 && (
+        {zoom !== 0.7 && (
           <motion.div 
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
