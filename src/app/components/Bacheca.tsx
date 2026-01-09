@@ -369,8 +369,8 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
                     className="appearance-none px-2 md:px-4 py-1.5 md:py-2.5 pr-8 md:pr-10 text-xs md:text-sm bg-slate-100 rounded-lg text-slate-700 hover:bg-slate-200 cursor-pointer border border-slate-200 shadow-sm"
                   >
                     <option value="">Categoria</option>
-                    {categories.map((cat, idx) => (
-                      <option key={cat + '-' + idx} value={cat}>{cat}</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
                   <SlidersHorizontal className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-3 md:w-4 h-3 md:h-4 text-slate-500 pointer-events-none" />
@@ -397,8 +397,8 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
                     className="appearance-none px-2 md:px-4 py-1.5 md:py-2.5 pr-8 md:pr-10 text-xs md:text-sm bg-slate-100 rounded-lg text-slate-700 hover:bg-slate-200 cursor-pointer border border-slate-200 shadow-sm"
                   >
                     <option value="">Campus</option>
-                    {campuses.map((campus, idx) => (
-                      <option key={campus + '-' + idx} value={campus}>{campus}</option>
+                    {campuses.map((campus) => (
+                      <option key={campus} value={campus}>{campus}</option>
                     ))}
                   </select>
                   <SlidersHorizontal className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-3 md:w-4 h-3 md:h-4 text-slate-500 pointer-events-none" />
@@ -425,8 +425,8 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
                     className="appearance-none px-2 md:px-4 py-1.5 md:py-2.5 pr-8 md:pr-10 text-xs md:text-sm bg-slate-100 rounded-lg text-slate-700 hover:bg-slate-200 cursor-pointer border border-slate-200 shadow-sm"
                   >
                     <option value="">Giorno</option>
-                    {days.map((day, idx) => (
-                      <option key={day + '-' + idx} value={day}>{day}</option>
+                    {days.map((day) => (
+                      <option key={day} value={day}>{day}</option>
                     ))}
                   </select>
                   <SlidersHorizontal className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-3 md:w-4 h-3 md:h-4 text-slate-500 pointer-events-none" />
