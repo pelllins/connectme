@@ -30,6 +30,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
   
   // Zoom state
   const [zoom, setZoom] = useState(1);
+  const zoomRef = useRef(1);
   
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -167,33 +168,29 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
       
       // Calculate new zoom
       const delta = e.deltaY > 0 ? -0.05 : 0.05;
-      const targetZoom = Math.max(0.3, Math.min(2, zoom + delta));
-      // Animazione fluida tra zoom attuale e target
+      const targetZoom = Math.max(0.3, Math.min(2, zoomRef.current + delta));
       const duration = 180; // ms
       const start = performance.now();
-      const initialZoom = zoom;
+      const initialZoom = zoomRef.current;
       let animationFrame: number;
-      let lastZoom = zoom;
       function animateZoom(now: number) {
         const elapsed = now - start;
         const t = Math.min(elapsed / duration, 1);
         const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t; // easeInOut
         const currentZoom = initialZoom + (targetZoom - initialZoom) * ease;
-        // Aggiorna lo scroll in base al nuovo zoom, ma non triggera re-render
+        zoomRef.current = currentZoom;
         container.scrollLeft = pointX * currentZoom - mouseX;
         container.scrollTop = pointY * currentZoom - mouseY;
-        lastZoom = currentZoom;
         if (t < 1) {
           animationFrame = requestAnimationFrame(animateZoom);
         } else {
+          zoomRef.current = targetZoom;
           setZoom(targetZoom); // aggiorna lo stato solo alla fine
           container.scrollLeft = pointX * targetZoom - mouseX;
           container.scrollTop = pointY * targetZoom - mouseY;
         }
       }
-      setZoom(zoom); // assicura che lo stato sia coerente all'inizio
       animationFrame = requestAnimationFrame(animateZoom);
-      // cleanup in caso di smontaggio
       return () => cancelAnimationFrame(animationFrame);
     }
   };
@@ -236,40 +233,33 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 2 && initialPinchDistance !== null) {
       e.preventDefault();
-      
       if (!containerRef.current) return;
       const now = Date.now();
       if (now - lastPinchTsRef.current < 16) {
         return; // ~60fps throttle
       }
       lastPinchTsRef.current = now;
-      
       const container = containerRef.current;
       const rect = container.getBoundingClientRect();
-      
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
-      
       // Calculate current distance
       const currentDistance = Math.hypot(
         touch2.clientX - touch1.clientX,
         touch2.clientY - touch1.clientY
       );
-      
       // Calculate new zoom
       const scale = currentDistance / initialPinchDistance;
       const newZoom = Math.max(0.3, Math.min(2, initialZoom * scale));
-      
+      zoomRef.current = newZoom;
       // Calculate current center point
       const centerX = (touch1.clientX + touch2.clientX) / 2 - rect.left;
       const centerY = (touch1.clientY + touch2.clientY) / 2 - rect.top;
-      
-      // Update zoom + scroll within a frame
-      requestAnimationFrame(() => {
-        setZoom(newZoom);
-        container.scrollLeft = touchCenter.x * newZoom - centerX;
-        container.scrollTop = touchCenter.y * newZoom - centerY;
-      });
+      // Update scroll
+      container.scrollLeft = touchCenter.x * newZoom - centerX;
+      container.scrollTop = touchCenter.y * newZoom - centerY;
+      // Aggiorna lo stato solo ogni 100ms per sincronizzare
+      if (now % 100 < 16) setZoom(newZoom);
     }
   };
 
@@ -301,7 +291,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
             style={{
               width: '4000px',
               height: '3000px',
-              transform: `scale(${zoom})`,
+              transform: `scale(${zoomRef.current})`,
               transformOrigin: '0 0',
             }}
           >
