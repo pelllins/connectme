@@ -29,7 +29,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
   const [showJoinedOnly, setShowJoinedOnly] = useState(false);
   
   // Zoom state
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.7);
   
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -128,12 +128,12 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
     const contentCenterY = (scrollTop + viewportCenterY) / zoom;
     
     // Reset zoom
-    setZoom(1);
+    setZoom(0.7);
     
     // Adjust scroll to keep the center point centered at zoom 1
     setTimeout(() => {
-      container.scrollLeft = contentCenterX * 1 - viewportCenterX;
-      container.scrollTop = contentCenterY * 1 - viewportCenterY;
+      container.scrollLeft = contentCenterX * 0.7 - viewportCenterX;
+      container.scrollTop = contentCenterY * 0.7 - viewportCenterY;
     }, 0);
   };
 

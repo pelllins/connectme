@@ -164,8 +164,8 @@ function PostItNoteInner({
       style={{
         left: postIt.position.x,
         top: postIt.position.y,
-        width: '240px',
-        minHeight: '200px',
+        width: '180px',
+        minHeight: '140px',
         pointerEvents: isFiltered ? 'none' : 'auto',
         opacity: isDragging ? 0 : isFiltered ? 0.25 : 1,
       }}
