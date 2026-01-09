@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Header } from './components/Header';
 import { NavigationBar } from './components/NavigationBar';
 import { HomePage } from './components/HomePage';
@@ -10,26 +11,7 @@ import { PostIt, UserProfile } from './types';
 import { getAllPostIts, updatePostItPosition, savePostIt, updatePostItColor, batchSavePostIts, checkBackendHealth, syncToBackend, subscribeToPostIts } from './utils/api';
 
 function App() {
-    // Disabilita lo zoom globale del sito tranne che in bacheca
-    useEffect(() => {
-      function preventZoom(e: WheelEvent) {
-        // Permetti lo zoom solo se la sezione attiva è bacheca
-        if (activeSection !== 'bacheca' && (e.ctrlKey || e.metaKey)) {
-          e.preventDefault();
-        }
-      }
-      function preventPinch(e: TouchEvent) {
-        if (activeSection !== 'bacheca' && e.touches.length === 2) {
-          e.preventDefault();
-        }
-      }
-      document.body.addEventListener('wheel', preventZoom, { passive: false });
-      document.body.addEventListener('touchmove', preventPinch, { passive: false });
-      return () => {
-        document.body.removeEventListener('wheel', preventZoom);
-        document.body.removeEventListener('touchmove', preventPinch);
-      };
-    }, [activeSection]);
+  // Sposta la dichiarazione di activeSection PRIMA dell'useEffect che la usa
   const [activeSection, setActiveSection] = useState(() => {
     // Remember last opened section so refresh stays on the same page
     if (typeof window === 'undefined') return 'home';
@@ -40,6 +22,26 @@ function App() {
       return 'home';
     }
   });
+  // Disabilita lo zoom globale del sito tranne che in bacheca
+  useEffect(() => {
+    function preventZoom(e: WheelEvent) {
+      // Permetti lo zoom solo se la sezione attiva è bacheca
+      if (activeSection !== 'bacheca' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+      }
+    }
+    function preventPinch(e: TouchEvent) {
+      if (activeSection !== 'bacheca' && e.touches.length === 2) {
+        e.preventDefault();
+      }
+    }
+    document.body.addEventListener('wheel', preventZoom, { passive: false });
+    document.body.addEventListener('touchmove', preventPinch, { passive: false });
+    return () => {
+      document.body.removeEventListener('wheel', preventZoom);
+      document.body.removeEventListener('touchmove', preventPinch);
+    };
+  }, [activeSection]);
   const [isLoading, setIsLoading] = useState(true);
   const [isBackendOnline, setIsBackendOnline] = useState(true);
   const [joinedIds, setJoinedIds] = useState<string[]>([]);
@@ -66,20 +68,7 @@ function App() {
     }
   }, []);
   
-  // Prevent default zoom behavior on mobile
-  useEffect(() => {
-    const preventZoom = (e: TouchEvent) => {
-      if (e.touches.length > 1) {
-        e.preventDefault();
-      }
-    };
-    
-    document.addEventListener('touchmove', preventZoom, { passive: false });
-    
-    return () => {
-      document.removeEventListener('touchmove', preventZoom);
-    };
-  }, []);
+  // (Rimosso: prevenzione zoom duplicata su mobile, ora gestita solo dal listener con controllo activeSection)
   
   // Mock user profile
   const userProfile: UserProfile = {
@@ -316,59 +305,54 @@ function App() {
   const recentPostIts = postIts.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header 
-        showMenu={activeSection === 'bacheca'} 
-        onMenuClick={() => {}} 
-        title={activeSection === 'bacheca' ? 'Connect-me' : 'Io e il Polimi'}
-        showLogo={true}
-      />
-      
-      {activeSection === 'home' && (
-        <HomePage 
-          userProfile={userProfile} 
-          recentPostIts={recentPostIts}
-          onViewAllPosts={handleViewAllPosts}
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          showMenu={activeSection === 'bacheca'} 
+          onMenuClick={() => {}} 
+          title={activeSection === 'bacheca' ? 'Connect-me' : 'Io e il Polimi'}
+          showLogo={true}
         />
-      )}
-      
-      {activeSection === 'bacheca' && (
-        <Bacheca 
-          postIts={postIts}
-          onUpdatePostItPosition={handleUpdatePostItPosition}
-          onCreatePostIt={handleCreatePostIt}
-          onParticipate={handleParticipate}
+        {activeSection === 'home' && (
+          <HomePage 
+            userProfile={userProfile} 
+            recentPostIts={recentPostIts}
+            onViewAllPosts={handleViewAllPosts}
+          />
+        )}
+        {activeSection === 'bacheca' && (
+          <Bacheca 
+            postIts={postIts}
+            onUpdatePostItPosition={handleUpdatePostItPosition}
+            onCreatePostIt={handleCreatePostIt}
+            onParticipate={handleParticipate}
+          />
+        )}
+        {activeSection === 'agenda' && (
+          <Agenda />
+        )}
+        {activeSection === 'polimi' && (
+          <IoEIlPolimi 
+            userProfile={userProfile} 
+            imminentActivity={{ name: 'TYPE DESIGN', date: 'GIO 08 GEN', time: '09:15 - 13:15' }}
+            exams={{ iscrizioni: 1, esiti: 0 }}
+          />
+        )}
+        {activeSection === 'campus' && (
+          <div className="max-w-7xl mx-auto px-6 py-8 pb-24 bg-gray-50 min-h-screen">
+            <h2 className="text-gray-900 mb-4">Campus</h2>
+            <p className="text-gray-600">Sezione in arrivo...</p>
+          </div>
+        )}
+        {activeSection === 'supporto' && (
+          <Supporto />
+        )}
+        <NavigationBar 
+          activeSection={activeSection} 
+          onSectionChange={setActiveSection} 
         />
-      )}
-
-      {activeSection === 'agenda' && (
-        <Agenda />
-      )}
-
-      {activeSection === 'polimi' && (
-        <IoEIlPolimi 
-          userProfile={userProfile} 
-          imminentActivity={{ name: 'TYPE DESIGN', date: 'GIO 08 GEN', time: '09:15 - 13:15' }}
-          exams={{ iscrizioni: 1, esiti: 0 }}
-        />
-      )}
-
-      {activeSection === 'campus' && (
-        <div className="max-w-7xl mx-auto px-6 py-8 pb-24 bg-gray-50 min-h-screen">
-          <h2 className="text-gray-900 mb-4">Campus</h2>
-          <p className="text-gray-600">Sezione in arrivo...</p>
-        </div>
-      )}
-
-      {activeSection === 'supporto' && (
-        <Supporto />
-      )}
-
-      <NavigationBar 
-        activeSection={activeSection} 
-        onSectionChange={setActiveSection} 
-      />
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
 
