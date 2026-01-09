@@ -44,8 +44,15 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
 
   // Check if a post-it matches the current filters (memoized)
   const isPostItActive = useCallback((post: PostIt) => {
-    if (searchQuery && !post.content.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const content = (post.content || '').toLowerCase();
+      const title = (post.title || '').toLowerCase();
+      const category = (post.category || '').toLowerCase();
+      const campus = (post.campus || '').toLowerCase();
+      if (!content.includes(query) && !title.includes(query) && !category.includes(query) && !campus.includes(query)) {
+        return false;
+      }
     }
     if (selectedCategory && post.category !== selectedCategory) {
       return false;
