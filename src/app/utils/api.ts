@@ -162,10 +162,11 @@ export async function savePostIt(
 ): Promise<PostIt> {
   try {
     const now = new Date().toISOString();
-    const postItWithUpdate = { ...postIt, updatedAt: now };
+    // Aggiorna updatedAt solo localmente
+    const postItForBackend = { ...postIt };
     const data = await fetchAPI("/postits", {
       method: "POST",
-      body: JSON.stringify(postItWithUpdate),
+      body: JSON.stringify(postItForBackend),
     });
     // Also save to localStorage
     const localData = loadFromLocalStorage() || [];
@@ -188,9 +189,11 @@ export async function batchSavePostIts(
   postIts: PostIt[],
 ): Promise<void> {
   try {
+    // Rimuovi updatedAt dai post-it inviati al backend
+    const postItsForBackend = postIts.map(({ updatedAt, ...rest }) => rest);
     await fetchAPI("/postits/batch", {
       method: "POST",
-      body: JSON.stringify(postIts),
+      body: JSON.stringify(postItsForBackend),
     });
   } catch (error) {
     console.error("Error batch saving post-its:", error);
@@ -208,9 +211,10 @@ export async function updatePostItPosition(
       `🌐 Sending PUT request for post-it ${id} to (${x}, ${y})`,
     );
     const now = new Date().toISOString();
+    // Invia solo x e y al backend
     const data = await fetchAPI(`/postits/${id}/position`, {
       method: "PUT",
-      body: JSON.stringify({ x, y, updatedAt: now }),
+      body: JSON.stringify({ x, y }),
     });
     console.log(`✅ Server response:`, data);
     // Also update localStorage
