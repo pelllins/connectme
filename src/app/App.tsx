@@ -10,6 +10,26 @@ import { PostIt, UserProfile } from './types';
 import { getAllPostIts, updatePostItPosition, savePostIt, updatePostItColor, batchSavePostIts, checkBackendHealth, syncToBackend, subscribeToPostIts } from './utils/api';
 
 function App() {
+    // Disabilita lo zoom globale del sito tranne che in bacheca
+    useEffect(() => {
+      function preventZoom(e: WheelEvent) {
+        // Permetti lo zoom solo se la sezione attiva è bacheca
+        if (activeSection !== 'bacheca' && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+        }
+      }
+      function preventPinch(e: TouchEvent) {
+        if (activeSection !== 'bacheca' && e.touches.length === 2) {
+          e.preventDefault();
+        }
+      }
+      document.body.addEventListener('wheel', preventZoom, { passive: false });
+      document.body.addEventListener('touchmove', preventPinch, { passive: false });
+      return () => {
+        document.body.removeEventListener('wheel', preventZoom);
+        document.body.removeEventListener('touchmove', preventPinch);
+      };
+    }, [activeSection]);
   const [activeSection, setActiveSection] = useState(() => {
     // Remember last opened section so refresh stays on the same page
     if (typeof window === 'undefined') return 'home';
