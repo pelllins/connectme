@@ -33,10 +33,16 @@ function PostItNoteInner({
   const dragWindowMs = 300;
   const lastTapRef = useRef<number>(0);
 
+  // Rileva se è mobile
+  const isMobile = typeof window !== 'undefined' && (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator.userAgent)
+  );
+
   const [{ isDragging: isBeingDragged }, dragRef, preview] = useDrag({
     type: 'POST_IT',
     canDrag: () => {
-      // Permetti il drag solo entro dragWindowMs dal tap
+      if (!isMobile) return true;
+      // Permetti il drag solo entro dragWindowMs dal tap su mobile
       return Date.now() - lastTapRef.current < dragWindowMs;
     },
     item: () => {
@@ -77,19 +83,19 @@ function PostItNoteInner({
   const getPinColor = () => {
     switch (postIt.category) {
       case 'Studio':
-        return '#5B92FF'; // Blu
+        return '#3CA9D3';
       case 'Social':
-        return '#FF704E'; // Arancione/Rosso
+        return '#FF704E';
       case 'Sport':
-        return '#FFB772'; // Giallo/Arancione chiaro
+        return '#FF9E3F';
       case 'Passioni/Interessi':
-        return '#85DE91'; // Verde
+        return '#58BF4E';
       case 'Pausa Caffè':
-        return '#E895FF'; // Viola chiaro
+        return '#8D7ED4';
       case 'Pranzo':
-        return '#FB2E74'; // Rosa
+        return '#FB2E74';
       default:
-        return '#8D7ED4'; // Viola
+        return '#8D7ED4';
     }
   };
 
@@ -125,7 +131,20 @@ function PostItNoteInner({
     };
   };
 
-  const colorStyle = getAgedColor(postIt.color);
+  // Nuova palette base
+  const baseCategoryColors: Record<string, string> = {
+    'Studio': '#3CA9D3',
+    'Social': '#FF704E',
+    'Sport': '#FF9E3F',
+    'Passioni/Interessi': '#58BF4E',
+    'Pausa Caffè': '#8D7ED4',
+    'Pranzo': '#FB2E74',
+  };
+
+  // Usa sempre il colore base della categoria
+  const postItColor = baseCategoryColors[postIt.category] || '#3CA9D3';
+
+  const colorStyle = getAgedColor(postItColor);
 
   return (
     <motion.div

@@ -111,7 +111,7 @@ export async function getAllPostIts(): Promise<PostIt[]> {
       let merged = validBackendPostIts;
       if (localData && localData.length > 0) {
         const localById = new Map(localData.map(p => [p.id, p] as const));
-        merged = validBackendPostIts.map(p => {
+        merged = validBackendPostIts.map((p: PostIt) => {
           const local = localById.get(p.id);
           if (!local) return p;
           // Preserve local participantIds/participants if they differ

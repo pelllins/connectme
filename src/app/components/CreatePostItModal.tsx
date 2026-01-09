@@ -11,11 +11,11 @@ interface CreatePostItModalProps {
 }
 
 const categoryColors: Record<Category, string> = {
-  'Studio': '#5B92FF',
+  'Studio': '#3CA9D3',
   'Social': '#FF704E',
-  'Sport': '#FFB772',
-  'Passioni/Interessi': '#85DE91',
-  'Pausa Caffè': '#E895FF',
+  'Sport': '#FF9E3F',
+  'Passioni/Interessi': '#58BF4E',
+  'Pausa Caffè': '#8D7ED4',
   'Pranzo': '#FB2E74',
 };
 

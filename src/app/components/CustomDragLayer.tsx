@@ -27,15 +27,15 @@ export function CustomDragLayer({ zoom }: CustomDragLayerProps) {
   const getPinColor = () => {
     switch (postIt.category) {
       case 'Studio':
-        return '#5B92FF';
+        return '#3CA9D3';
       case 'Social':
         return '#FF704E';
       case 'Sport':
-        return '#FFB772';
+        return '#FF9E3F';
       case 'Passioni/Interessi':
-        return '#85DE91';
+        return '#58BF4E';
       case 'Pausa Caffè':
-        return '#E895FF';
+        return '#8D7ED4';
       case 'Pranzo':
         return '#FB2E74';
       default:
@@ -71,7 +71,20 @@ export function CustomDragLayer({ zoom }: CustomDragLayerProps) {
     };
   };
 
-  const colorStyle = getAgedColor(postIt.color);
+  // Nuova palette base
+  const baseCategoryColors: Record<string, string> = {
+    'Studio': '#3CA9D3',
+    'Social': '#FF704E',
+    'Sport': '#FF9E3F',
+    'Passioni/Interessi': '#58BF4E',
+    'Pausa Caffè': '#8D7ED4',
+    'Pranzo': '#FB2E74',
+  };
+
+  // Usa sempre il colore base della categoria
+  const postItColor = baseCategoryColors[postIt.category] || '#3CA9D3';
+
+  const colorStyle = getAgedColor(postItColor);
 
   return (
     <div
