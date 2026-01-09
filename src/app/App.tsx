@@ -171,29 +171,28 @@ function App() {
             await syncToBackend(postIts);
             setIsBackendOnline(true);
             // Reset flag after a short delay
-            setTimeout(() => {
-              isUpdatingFromRealtime.current = false;
-            }, 1000);
-          } else {
-            setIsBackendOnline(false);
-          }
-        } catch (error) {
-          console.log('⚠️ Auto-sync failed');
-          setIsBackendOnline(false);
-          isUpdatingFromRealtime.current = false;
-        }
-      }
-    }, 30000); // Sync every 30 seconds
-
-    return () => clearInterval(syncInterval);
-  }, [postIts]);
-
-  const handleCreatePostIt = async (newPostItData: Omit<PostIt, 'id' | 'position' | 'participants'>) => {
-    // Generate unique ID using timestamp + random number
-    const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
-    const newPostIt: PostIt = {
-      ...newPostItData,
+            useEffect(() => {
+              const preventZoom = (e: WheelEvent) => {
+                if ((e.ctrlKey || e.metaKey) && activeSection !== 'bacheca') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
+              };
+              const preventGesture = (e: TouchEvent) => {
+                if (e.touches.length > 1 && activeSection !== 'bacheca') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
+              };
+              window.addEventListener('wheel', preventZoom, { passive: false, capture: true });
+              window.addEventListener('gesturestart', preventGesture, { passive: false, capture: true });
+              window.addEventListener('touchmove', preventGesture, { passive: false, capture: true });
+              return () => {
+                window.removeEventListener('wheel', preventZoom, true);
+                window.removeEventListener('gesturestart', preventGesture, true);
+                window.removeEventListener('touchmove', preventGesture, true);
+              };
+            }, [activeSection]);
       id: uniqueId,
       position: { x: 100 + Math.random() * 300, y: 100 + Math.random() * 200 },
       participants: 0,
