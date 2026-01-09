@@ -9,6 +9,7 @@ export interface PostIt {
   campus: Campus;
   date?: string;
   createdAt?: string; // Timestamp ISO per calcolare l'età
+  updatedAt?: string; // Timestamp ISO per sincronizzazione e merge
   participants: number;
   participantIds?: string[]; // Array di matricole degli utenti che partecipano
   position: { x: number; y: number };

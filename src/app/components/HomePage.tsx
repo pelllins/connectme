@@ -23,7 +23,7 @@ export function HomePage() {
 			<div className="px-5 pt-4 pb-2">
 				<div className="flex items-center justify-between">
 					<div className="flex flex-col">
-						<span className="text-[#294CFF] text-xl font-semibold">Niccolò</span>
+						<span className="text-[#294CFF] text-xl font-semibold">Marco</span>
 						<span className="text-[#15325B] text-xl font-medium">, c’è qualcosa che dovresti controllare</span>
 					</div>
 				</div>

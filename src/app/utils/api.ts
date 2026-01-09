@@ -105,29 +105,30 @@ export async function getAllPostIts(): Promise<PostIt[]> {
       position: postIt.position || { x: 100 + Math.random() * 300, y: 100 + Math.random() * 200 }
     }));
     
-    // If backend has data, merge with local participants (to preserve optimistic changes)
+    // Merge robusto: per ogni post-it con stesso id, tieni quello con updatedAt più recente
     if (validBackendPostIts.length > 0) {
-      console.log('✅ Backend is online - merging with local data (participants)');
-      let merged = validBackendPostIts;
-      if (localData && localData.length > 0) {
-        const localById = new Map(localData.map(p => [p.id, p] as const));
-        merged = validBackendPostIts.map((p: PostIt) => {
-          const local = localById.get(p.id);
-          if (!local) return p;
-          // Preserve local participantIds/participants if they differ
-          const localPartIds = local.participantIds || [];
-          const backendPartIds = p.participantIds || [];
-          const differs = localPartIds.length !== backendPartIds.length || localPartIds.some(id => !backendPartIds.includes(id));
-          if (differs) {
-            return {
-              ...p,
-              participantIds: localPartIds,
-              participants: local.participants,
-            };
-          }
-          return p;
-        });
+      console.log('✅ Backend is online - merging with local data (updatedAt)');
+      let mergedMap = new Map();
+      // Inserisci tutti i post-it del backend
+      for (const p of validBackendPostIts) {
+        mergedMap.set(p.id, p);
       }
+      // Se esistono dati locali, confronta updatedAt
+      if (localData && localData.length > 0) {
+        for (const local of localData) {
+          const backend = mergedMap.get(local.id);
+          if (!backend) {
+            mergedMap.set(local.id, local);
+          } else {
+            const localTime = new Date(local.updatedAt || local.createdAt || 0).getTime();
+            const backendTime = new Date(backend.updatedAt || backend.createdAt || 0).getTime();
+            if (localTime > backendTime) {
+              mergedMap.set(local.id, local);
+            }
+          }
+        }
+      }
+      const merged = Array.from(mergedMap.values());
       saveToLocalStorage(merged);
       return merged;
     }
@@ -160,16 +161,16 @@ export async function savePostIt(
   postIt: PostIt,
 ): Promise<PostIt> {
   try {
+    const now = new Date().toISOString();
+    const postItWithUpdate = { ...postIt, updatedAt: now };
     const data = await fetchAPI("/postits", {
       method: "POST",
-      body: JSON.stringify(postIt),
+      body: JSON.stringify(postItWithUpdate),
     });
-    
     // Also save to localStorage
     const localData = loadFromLocalStorage() || [];
     const updatedData = [...localData, data.postIt];
     saveToLocalStorage(updatedData);
-    
     return data.postIt;
   } catch (error) {
     console.error("Error saving post-it:", error);
@@ -206,21 +207,20 @@ export async function updatePostItPosition(
     console.log(
       `🌐 Sending PUT request for post-it ${id} to (${x}, ${y})`,
     );
+    const now = new Date().toISOString();
     const data = await fetchAPI(`/postits/${id}/position`, {
       method: "PUT",
-      body: JSON.stringify({ x, y }),
+      body: JSON.stringify({ x, y, updatedAt: now }),
     });
     console.log(`✅ Server response:`, data);
-    
     // Also update localStorage
     const localData = loadFromLocalStorage();
     if (localData) {
       const updatedData = localData.map(p => 
-        p.id === id ? { ...p, position: { x, y } } : p
+        p.id === id ? { ...p, position: { x, y }, updatedAt: now } : p
       );
       saveToLocalStorage(updatedData);
     }
-    
     return data.postIt;
   } catch (error) {
     console.error(
