@@ -30,7 +30,6 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
   
   // Zoom state
   const [zoom, setZoom] = useState(1);
-  const zoomRef = useRef(1);
   
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -168,24 +167,23 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
       
       // Calculate new zoom
       const delta = e.deltaY > 0 ? -0.05 : 0.05;
-      const targetZoom = Math.max(0.3, Math.min(2, zoomRef.current + delta));
+      const targetZoom = Math.max(0.3, Math.min(2, zoom + delta));
       const duration = 180; // ms
       const start = performance.now();
-      const initialZoom = zoomRef.current;
+      const initialZoom = zoom;
       let animationFrame: number;
       function animateZoom(now: number) {
         const elapsed = now - start;
         const t = Math.min(elapsed / duration, 1);
         const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t; // easeInOut
         const currentZoom = initialZoom + (targetZoom - initialZoom) * ease;
-        zoomRef.current = currentZoom;
+        setZoom(currentZoom);
         container.scrollLeft = pointX * currentZoom - mouseX;
         container.scrollTop = pointY * currentZoom - mouseY;
         if (t < 1) {
           animationFrame = requestAnimationFrame(animateZoom);
         } else {
-          zoomRef.current = targetZoom;
-          setZoom(targetZoom); // aggiorna lo stato solo alla fine
+          setZoom(targetZoom);
           container.scrollLeft = pointX * targetZoom - mouseX;
           container.scrollTop = pointY * targetZoom - mouseY;
         }
@@ -251,7 +249,8 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
       // Calculate new zoom
       const scale = currentDistance / initialPinchDistance;
       const newZoom = Math.max(0.3, Math.min(2, initialZoom * scale));
-      zoomRef.current = newZoom;
+      // Aggiorna lo zoom ad ogni frame per la massima fluidità
+      setZoom(newZoom);
       // Calculate current center point
       const centerX = (touch1.clientX + touch2.clientX) / 2 - rect.left;
       const centerY = (touch1.clientY + touch2.clientY) / 2 - rect.top;
@@ -291,7 +290,7 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
             style={{
               width: '4000px',
               height: '3000px',
-              transform: `scale(${zoomRef.current})`,
+              transform: `scale(${zoom})`,
               transformOrigin: '0 0',
             }}
           >
