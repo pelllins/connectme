@@ -1,9 +1,4 @@
 import { useState, useRef, useMemo, useCallback } from 'react';
-// ...existing code...
-// Ref per il valore intermedio di zoom
-const zoomRef = useRef(1);
-// Ref per throttling setZoom
-const lastSetZoomTsRef = useRef(0);
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TouchBackend } from 'react-dnd-touch-backend';
@@ -177,30 +172,29 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
       const duration = 180; // ms
       const start = performance.now();
       const initialZoom = zoom;
-      function animateZoom(now) {
+      let animationFrame: number;
+      let lastZoom = zoom;
+      function animateZoom(now: number) {
         const elapsed = now - start;
         const t = Math.min(elapsed / duration, 1);
         const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t; // easeInOut
         const currentZoom = initialZoom + (targetZoom - initialZoom) * ease;
-        zoomRef.current = currentZoom;
-        // Throttle setZoom: aggiorna solo ogni 2 frame (~32ms)
-        const ts = performance.now();
-        if (ts - lastSetZoomTsRef.current > 32 || t === 1) {
-          setZoom(currentZoom);
-          lastSetZoomTsRef.current = ts;
-        }
+        // Aggiorna lo scroll in base al nuovo zoom, ma non triggera re-render
         container.scrollLeft = pointX * currentZoom - mouseX;
         container.scrollTop = pointY * currentZoom - mouseY;
+        lastZoom = currentZoom;
         if (t < 1) {
-          requestAnimationFrame(animateZoom);
+          animationFrame = requestAnimationFrame(animateZoom);
         } else {
-          setZoom(targetZoom);
-          zoomRef.current = targetZoom;
+          setZoom(targetZoom); // aggiorna lo stato solo alla fine
           container.scrollLeft = pointX * targetZoom - mouseX;
           container.scrollTop = pointY * targetZoom - mouseY;
         }
       }
-      requestAnimationFrame(animateZoom);
+      setZoom(zoom); // assicura che lo stato sia coerente all'inizio
+      animationFrame = requestAnimationFrame(animateZoom);
+      // cleanup in caso di smontaggio
+      return () => cancelAnimationFrame(animationFrame);
     }
   };
 
@@ -293,10 +287,10 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
   return (
     <DndProvider backend={isMobile ? TouchBackend : HTML5Backend} options={isMobile ? { enableMouseEvents: true } : undefined}>
       <div className="h-screen relative bg-gradient-to-br from-slate-50 via-white to-slate-100">
-        {/* Bacheca Area with Zoom e Scroll - Full Screen */}
+        {/* Bacheca Area with Zoom and Scroll - Full Screen */}
         <div 
           ref={containerRef}
-          className="absolute inset-0 overflow-auto bg-gradient-to-br from-gray-50 to-gray-100 pb-[76px]" // padding per navbar
+          className="absolute inset-0 overflow-auto bg-gradient-to-br from-gray-50 to-gray-100"
           onWheel={handleWheel}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -319,14 +313,6 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
                 backgroundSize: '40px 40px',
               }}
             />
-            {/* ...resto della bacheca... */}
-          </div>
-          {/* ...resto dei controlli bacheca... */}
-        </div>
-        {/* NavigationBar fissa in basso, fuori dal container zoomato */}
-        <div className="fixed bottom-0 left-0 right-0 z-50">
-          {/* NavigationBar viene renderizzata da App.tsx, qui solo spazio riservato se serve */}
-        </div>
             
             {/* Post-its */}
             {postIts.map((postIt) => (
