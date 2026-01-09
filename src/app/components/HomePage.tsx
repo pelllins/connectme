@@ -2,7 +2,7 @@
 
 
 import { Bell, Settings } from 'lucide-react';
-import polimiLogo from '/politecnico-di-milano-vector-logo.png';
+import polimiLogo from '../../assets/politecnico-di-milano-vector-logo.png';
 
 export function HomePage() {
 	return (

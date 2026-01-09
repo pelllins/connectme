@@ -148,7 +148,7 @@ function PostItNoteInner({
 
   return (
     <motion.div
-      ref={dragRef}
+      ref={node => { if (node) dragRef(node); }}
       initial={{ scale: 0, rotate: rotation }}
       animate={{ 
         scale: isDragging ? 1.05 : 1, 
