@@ -63,6 +63,7 @@ export function CreatePostItModal({ isOpen, onClose, onSave }: CreatePostItModal
       campus,
       date: formattedDate || undefined,
       color: categoryColors[category],
+      createdAt: new Date().toISOString(), // Ensure createdAt is always set
     });
 
     // Reset form

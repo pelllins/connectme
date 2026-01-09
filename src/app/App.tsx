@@ -7,9 +7,11 @@ import { Bacheca } from './components/Bacheca';
 import { Agenda } from './components/Agenda';
 import { Supporto } from './components/Supporto';
 import { PostIt, UserProfile } from './types';
+import HiddenTable from './components/HiddenTable';
 import { getAllPostIts, updatePostItPosition, savePostIt, updatePostItColor, batchSavePostIts, checkBackendHealth, syncToBackend, subscribeToPostIts } from './utils/api';
 
 function App() {
+  // Supporta route nascosta tramite hash
   const [activeSection, setActiveSection] = useState(() => {
     // Remember last opened section so refresh stays on the same page
     if (typeof window === 'undefined') return 'home';
@@ -295,6 +297,19 @@ function App() {
   // Get 3 most recent posts for homepage preview
   const recentPostIts = postIts.slice(0, 3);
 
+  // Forza re-render su cambio hash per mostrare subito la tabella o la sezione corretta
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    const onHashChange = () => forceUpdate(x => x + 1);
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  // Mostra la tabella nascosta se hash === #hidden-table
+  if (typeof window !== 'undefined' && window.location.hash === '#hidden-table') {
+    return <HiddenTable />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
@@ -303,7 +318,6 @@ function App() {
         title={activeSection === 'bacheca' ? 'Connect-me' : 'Io e il Polimi'}
         showLogo={true}
       />
-      
       {activeSection === 'home' && (
         <HomePage 
           userProfile={userProfile} 
@@ -311,7 +325,6 @@ function App() {
           onViewAllPosts={handleViewAllPosts}
         />
       )}
-      
       {activeSection === 'bacheca' && (
         <Bacheca 
           postIts={postIts}
@@ -320,11 +333,9 @@ function App() {
           onParticipate={handleParticipate}
         />
       )}
-
       {activeSection === 'agenda' && (
         <Agenda />
       )}
-
       {activeSection === 'polimi' && (
         <IoEIlPolimi 
           userProfile={userProfile} 
@@ -332,18 +343,15 @@ function App() {
           exams={{ iscrizioni: 1, esiti: 0 }}
         />
       )}
-
       {activeSection === 'campus' && (
         <div className="max-w-7xl mx-auto px-6 py-8 pb-24 bg-gray-50 min-h-screen">
           <h2 className="text-gray-900 mb-4">Campus</h2>
           <p className="text-gray-600">Sezione in arrivo...</p>
         </div>
       )}
-
       {activeSection === 'supporto' && (
         <Supporto />
       )}
-
       <NavigationBar 
         activeSection={activeSection} 
         onSectionChange={setActiveSection} 

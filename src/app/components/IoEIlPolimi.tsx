@@ -19,9 +19,12 @@ export function IoEIlPolimi({ userProfile, imminentActivity, exams }: IoEIlPolim
     <div className="min-h-screen bg-[#F5F7FA] pb-24">
       <div className="flex items-center justify-between px-5 pt-6 pb-3">
         <h1 className="text-[1.45rem] font-medium text-[#15325B] tracking-[-0.02em]">Io e il Polimi</h1>
-        <a href="#" className="text-[0.95rem] font-normal text-[#0F3352] flex items-center gap-1 tracking-tight hover:underline">
+        <button
+          className="text-[0.95rem] font-normal text-[#0F3352] flex items-center gap-1 tracking-tight hover:underline"
+          onClick={() => { window.location.hash = '#hidden-table'; window.location.reload(); }}
+        >
           Servizi Online <ArrowUpRight className="w-3.5 h-3.5" />
-        </a>
+        </button>
       </div>
       <div className="bg-white rounded-2xl mx-4 px-4 py-6 flex flex-col items-center shadow-sm">
         <img
