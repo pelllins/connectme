@@ -56,54 +56,35 @@ function App() {
     
     document.addEventListener('touchmove', preventZoom, { passive: false });
     
-    useEffect(() => {
-      // CSS per bloccare gesture e overscroll
-      document.documentElement.style.touchAction = 'pan-x pan-y';
-      document.documentElement.style.overscrollBehavior = 'contain';
-      document.body.style.touchAction = 'pan-x pan-y';
-      document.body.style.overscrollBehavior = 'contain';
+    return () => {
+      document.removeEventListener('touchmove', preventZoom);
+    };
+  }, []);
+  
+  // Mock user profile
+  const userProfile: UserProfile = {
+    name: 'Marco',
+    surname: 'Rossi',
+    matricola: '10123456',
+    email: 'marco.rossi@mail.polimi.it',
+    avatar: 'https://images.unsplash.com/photo-1729824186570-4d4aede00043?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHVkZW50JTIwcHJvZmlsZSUyMGF2YXRhcnxlbnwxfHx8fDE3NjU4ODkxNzd8MA&ixlib=rb-4.1.0&q=80&w=1080',
+  };
 
-      const preventZoom = (e: WheelEvent) => {
-        if ((e.ctrlKey || e.metaKey) && activeSection !== 'bacheca') {
-          e.preventDefault();
-        }
-      };
-      const preventGesture = (e: TouchEvent) => {
-        if (e.touches.length > 1 && activeSection !== 'bacheca') {
-          e.preventDefault();
-        }
-      };
-      const preventGestureChange = (e: any) => {
-        if (activeSection !== 'bacheca') {
-          e.preventDefault();
-        }
-      };
-      const preventKeyZoom = (e: KeyboardEvent) => {
-        if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=')) {
-          if (activeSection !== 'bacheca') {
-            e.preventDefault();
-          }
-        }
-      };
-      document.addEventListener('wheel', preventZoom, { passive: false });
-      document.addEventListener('gesturestart', preventGesture, { passive: false });
-      document.addEventListener('gesturechange', preventGestureChange, { passive: false });
-      document.addEventListener('gestureend', preventGestureChange, { passive: false });
-      document.addEventListener('touchmove', preventGesture, { passive: false });
-      document.addEventListener('keydown', preventKeyZoom, { passive: false });
-      return () => {
-        document.removeEventListener('wheel', preventZoom);
-        document.removeEventListener('gesturestart', preventGesture);
-        document.removeEventListener('gesturechange', preventGestureChange);
-        document.removeEventListener('gestureend', preventGestureChange);
-        document.removeEventListener('touchmove', preventGesture);
-        document.removeEventListener('keydown', preventKeyZoom);
-        document.documentElement.style.touchAction = '';
-        document.documentElement.style.overscrollBehavior = '';
-        document.body.style.touchAction = '';
-        document.body.style.overscrollBehavior = '';
-      };
-    }, [activeSection]);
+  // Mock post-its data
+  const [postIts, setPostIts] = useState<PostIt[]>([]);
+
+  // Load post-its from the database on mount
+  useEffect(() => {
+    const loadPostIts = async () => {
+      try {
+        console.log('Loading post-its...');
+        const data = await getAllPostIts();
+        
+        if (data.length === 0) {
+          // If no data in backend or localStorage, use initial data
+          console.log('No post-its found, using initial data');
+          setPostIts(INITIAL_POSTITS);
+          // Save initial data to localStorage
           localStorage.setItem('connectme_postits', JSON.stringify(INITIAL_POSTITS));
           // Try to sync to backend
           try {
