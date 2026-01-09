@@ -167,14 +167,28 @@ export function Bacheca({ postIts, onUpdatePostItPosition, onCreatePostIt, onPar
       
       // Calculate new zoom
       const delta = e.deltaY > 0 ? -0.05 : 0.05;
-      const newZoom = Math.max(0.3, Math.min(2, zoom + delta));
-      
-      // Update zoom + scroll within a frame
-      requestAnimationFrame(() => {
-        setZoom(newZoom);
-        container.scrollLeft = pointX * newZoom - mouseX;
-        container.scrollTop = pointY * newZoom - mouseY;
-      });
+      const targetZoom = Math.max(0.3, Math.min(2, zoom + delta));
+      // Animazione fluida tra zoom attuale e target
+      const duration = 180; // ms
+      const start = performance.now();
+      const initialZoom = zoom;
+      function animateZoom(now: number) {
+        const elapsed = now - start;
+        const t = Math.min(elapsed / duration, 1);
+        const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t; // easeInOut
+        const currentZoom = initialZoom + (targetZoom - initialZoom) * ease;
+        setZoom(currentZoom);
+        container.scrollLeft = pointX * currentZoom - mouseX;
+        container.scrollTop = pointY * currentZoom - mouseY;
+        if (t < 1) {
+          requestAnimationFrame(animateZoom);
+        } else {
+          setZoom(targetZoom);
+          container.scrollLeft = pointX * targetZoom - mouseX;
+          container.scrollTop = pointY * targetZoom - mouseY;
+        }
+      }
+      requestAnimationFrame(animateZoom);
     }
   };
 
